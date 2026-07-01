@@ -17,8 +17,8 @@ export class Game extends Scene {
   
   // Sprites
   gridContainer: Phaser.GameObjects.Container;
-  redKnight: Phaser.GameObjects.Image;
-  blueKnight: Phaser.GameObjects.Image;
+  redKnight: Phaser.GameObjects.Sprite;
+  blueKnight: Phaser.GameObjects.Sprite;
   
   // UI
   uiContainer: Phaser.GameObjects.Container;
@@ -85,12 +85,31 @@ export class Game extends Scene {
   }
 
   createKnights() {
-    this.redKnight = this.add.image(0, 0, 'redknight');
-    this.redKnight.setDisplaySize(this.cellSize * 0.8, this.cellSize * 0.8);
+    this.anims.create({
+      key: 'red_idle',
+      frames: this.anims.generateFrameNumbers('redknight', { start: 0, end: 7 }),
+      frameRate: 10,
+      repeat: -1
+    });
+    this.anims.create({
+      key: 'blue_idle',
+      frames: this.anims.generateFrameNumbers('blueknight', { start: 0, end: 7 }),
+      frameRate: 10,
+      repeat: -1
+    });
+
+    this.redKnight = this.add.sprite(0, 0, 'redknight');
+    this.blueKnight = this.add.sprite(0, 0, 'blueknight');
+
+    // The knight's actual occupied space is 94x94 (from 48px to 142px) in the 192x192 frame.
+    // We want the 94x94 area to take up about 80% of our 64px cell size.
+    const scale = (this.cellSize * 0.9) / 94; 
+    this.redKnight.setScale(scale);
+    this.blueKnight.setScale(scale);
     
-    this.blueKnight = this.add.image(0, 0, 'blueknight');
-    this.blueKnight.setDisplaySize(this.cellSize * 0.8, this.cellSize * 0.8);
-    
+    this.redKnight.play('red_idle');
+    this.blueKnight.play('blue_idle');
+
     this.gridContainer.add(this.redKnight);
     this.gridContainer.add(this.blueKnight);
     
@@ -123,7 +142,9 @@ export class Game extends Scene {
     const totalGridWidth = 8 * this.cellSize;
     const totalGridHeight = 12 * this.cellSize;
     
-    const scaleFactor = Math.min(width / (totalGridWidth + 40), height / (totalGridHeight + 200), 1);
+    // Calculate base scale to fit screen, then multiply by 1.5x as requested
+    let scaleFactor = Math.min(width / (totalGridWidth + 40), height / (totalGridHeight + 200), 1);
+    scaleFactor *= 1.5;
     
     this.gridContainer.setScale(scaleFactor);
     

@@ -11,21 +11,69 @@
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
+        "levels/baseLevelOne.json": {
+            "scale": 0.9710286458333334,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 256.42909822326516,
+                "y": 383.61381159906136
+            }
+        },
+        "levels/baseLevelOne.json#Tilemap_color1": {
+            "scaleInDock": 1
+        },
+        "levels/baseLevelOne.json#Water Background color": {
+            "scaleInDock": 1
+        },
+        "levels/baseLevelOne.tmj": {
+            "scale": 1.1639973958333334,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 197.59494378880248,
+                "y": 320.01789809273447
+            }
+        },
+        "levels/baseLevelOne.tmj#Tilemap_color1": {
+            "scaleInDock": 1
+        },
+        "levels/baseLevelOne.tmj#Water Background color": {
+            "scaleInDock": 1
+        },
+        "levels/baseLevelThree.json": {
+            "scale": 1.165234375,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 192.2360040227958,
+                "y": 319.67817633255106
+            }
+        },
+        "levels/baseleveltwo.json": {
+            "scale": 1.165234375,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 176.78846798524975,
+                "y": 318.81997988602075
+            }
+        },
         "tilesets/Tilemap_color1.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
         }
     },
     "last.imagePath": "/Users/dream/redditknights/dual-knights/public/assets/tiledthings",
-    "map.height": 12,
+    "map.height": 10,
     "map.lastUsedFormat": "json",
     "map.tileHeight": 64,
     "map.tileWidth": 64,
-    "map.width": 8,
+    "map.width": 6,
     "openFiles": [
     ],
     "project": "redditdualknightsproject.tiled-project",
     "recentFiles": [
+        "levels/baseLevelOne.json",
+        "levels/baseleveltwo.json",
+        "levels/baseLevelThree.json",
+        "levels/baseLevelOne.tmj",
         "Water Background color.tsx",
         "tilesets/Tilemap_color1.tsx"
     ],
