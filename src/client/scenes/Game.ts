@@ -3,7 +3,6 @@ import * as Phaser from 'phaser';
 
 export class Game extends Scene {
   camera: Phaser.Cameras.Scene2D.Camera;
-  background: Phaser.GameObjects.Image;
   
   // Grid config
   gridWidth = 6;
@@ -31,9 +30,7 @@ export class Game extends Scene {
 
   create() {
     this.camera = this.cameras.main;
-    this.camera.setBackgroundColor(0x222222);
-
-    this.background = this.add.image(512, 384, 'background').setAlpha(0.25);
+    this.camera.setBackgroundColor(0x47aba9);
 
     this.gridContainer = this.add.container(0, 0);
     this.uiContainer = this.add.container(0, 0);
@@ -55,32 +52,32 @@ export class Game extends Scene {
   }
 
   createGrid() {
-    // Background tiles
-    for (let y = 0; y < this.gridHeight; y++) {
-      for (let x = 0; x < this.gridWidth; x++) {
-        const tile = this.add.image(
-          x * this.cellSize + this.cellSize / 2, 
-          y * this.cellSize + this.cellSize / 2, 
-          'tile'
-        );
-        // Scale tile if it's not matching cellSize exactly
-        tile.setDisplaySize(this.cellSize, this.cellSize);
-        this.gridContainer.add(tile);
-      }
+    const map = this.make.tilemap({ key: 'baseLevelOne' });
+    
+    // Link the tileset names from Tiled to the image keys in Phaser
+    const waterTileset = map.addTilesetImage('Water Background color', 'water_tiles');
+    const landscapeTileset = map.addTilesetImage('Tilemap_color1', 'landscape_tiles');
+    
+    if (waterTileset && landscapeTileset) {
+      const waterLayer = map.createLayer('water', waterTileset, 0, 0);
+      const groundLayer = map.createLayer('ground', landscapeTileset, 0, 0);
+      
+      if (waterLayer) this.gridContainer.add(waterLayer);
+      if (groundLayer) this.gridContainer.add(groundLayer);
     }
     
-    // Destinations
+    // Destinations (offset by +1 tile)
     const redFinal = this.add.image(
-      this.redFinalPos.x * this.cellSize + this.cellSize / 2,
-      this.redFinalPos.y * this.cellSize + this.cellSize / 2,
+      (this.redFinalPos.x + 1) * this.cellSize + this.cellSize / 2,
+      (this.redFinalPos.y + 1) * this.cellSize + this.cellSize / 2,
       'redfinal'
     );
     redFinal.setDisplaySize(this.cellSize * 0.8, this.cellSize * 0.8);
     this.gridContainer.add(redFinal);
 
     const blueFinal = this.add.image(
-      this.blueFinalPos.x * this.cellSize + this.cellSize / 2,
-      this.blueFinalPos.y * this.cellSize + this.cellSize / 2,
+      (this.blueFinalPos.x + 1) * this.cellSize + this.cellSize / 2,
+      (this.blueFinalPos.y + 1) * this.cellSize + this.cellSize / 2,
       'bluefinal'
     );
     blueFinal.setDisplaySize(this.cellSize * 0.8, this.cellSize * 0.8);
@@ -112,24 +109,19 @@ export class Game extends Scene {
       this.uiContainer.add(btn);
     };
 
-    // Arrange buttons in a D-pad layout
-    createBtn(0, -60, '⬆️', 0, -1);
-    createBtn(0, 60, '⬇️', 0, 1);
-    createBtn(-60, 0, '⬅️', -1, 0);
-    createBtn(60, 0, '➡️', 1, 0);
+    // Arrange buttons in a single horizontal line at the bottom
+    createBtn(-150, 0, '⬅️', -1, 0);
+    createBtn(-50, 0, '⬇️', 0, 1);
+    createBtn(50, 0, '⬆️', 0, -1);
+    createBtn(150, 0, '➡️', 1, 0);
   }
 
   updateLayout(width: number, height: number) {
     this.cameras.resize(width, height);
-    if (this.background) {
-      this.background.setPosition(width / 2, height / 2);
-      const scale = Math.max(width / this.background.width, height / this.background.height);
-      this.background.setScale(scale);
-    }
 
     // Center grid
-    const totalGridWidth = this.gridWidth * this.cellSize;
-    const totalGridHeight = this.gridHeight * this.cellSize;
+    const totalGridWidth = 8 * this.cellSize;
+    const totalGridHeight = 12 * this.cellSize;
     
     const scaleFactor = Math.min(width / (totalGridWidth + 40), height / (totalGridHeight + 200), 1);
     
@@ -143,13 +135,18 @@ export class Game extends Scene {
       (height - scaledGridH) / 2 - 50 * scaleFactor // Shift up slightly for controls
     );
 
-    // Center UI (controls) below the grid
-    this.uiContainer.setPosition(width / 2, height - 100);
+    // Center UI (controls) near the bottom edge
+    this.uiContainer.setPosition(width / 2, height - 60);
     this.uiContainer.setScale(scaleFactor);
   }
 
   move(dx: number, dy: number) {
     if (this.gameOver) return;
+
+    const oldRedX = this.redPos.x;
+    const oldRedY = this.redPos.y;
+    const oldBlueX = this.bluePos.x;
+    const oldBlueY = this.bluePos.y;
 
     let redMoved = false;
     const newRedX = this.redPos.x + dx;
@@ -172,17 +169,28 @@ export class Game extends Scene {
     }
 
     if (redMoved || blueMoved) {
+      const swapped = 
+        this.redPos.x === oldBlueX && this.redPos.y === oldBlueY &&
+        this.bluePos.x === oldRedX && this.bluePos.y === oldRedY;
+
+      if (swapped) {
+        this.updateKnightPositions(true);
+        this.showPopup("Game Over!\nKnights crossed paths.");
+        this.gameOver = true;
+        return;
+      }
+
       this.updateKnightPositions(true);
       this.checkWinCondition();
     }
   }
 
   updateKnightPositions(animate = false) {
-    const rx = this.redPos.x * this.cellSize + this.cellSize / 2;
-    const ry = this.redPos.y * this.cellSize + this.cellSize / 2;
+    const rx = (this.redPos.x + 1) * this.cellSize + this.cellSize / 2;
+    const ry = (this.redPos.y + 1) * this.cellSize + this.cellSize / 2;
     
-    const bx = this.bluePos.x * this.cellSize + this.cellSize / 2;
-    const by = this.bluePos.y * this.cellSize + this.cellSize / 2;
+    const bx = (this.bluePos.x + 1) * this.cellSize + this.cellSize / 2;
+    const by = (this.bluePos.y + 1) * this.cellSize + this.cellSize / 2;
 
     if (animate) {
       this.tweens.add({

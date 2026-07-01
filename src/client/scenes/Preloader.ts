@@ -34,6 +34,12 @@ export class Preloader extends Scene {
     this.load.image('tile', 'knights/tilesingle.png');
     this.load.image('bluefinal', 'knights/bluefinaltile.png');
     this.load.image('redfinal', 'knights/redfinaltile.png');
+    // Map data
+    this.load.tilemapTiledJSON('baseLevelOne', 'tiledthings/levels/baseLevelOne.json');
+
+    // Landscape tilemap
+    this.load.image('landscape_tiles', 'tiledthings/Tilemap_color1.png');
+    this.load.image('water_tiles', 'tiledthings/WaterBackground.png');
   }
 
   create() {
