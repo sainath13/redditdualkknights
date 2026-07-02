@@ -19,6 +19,8 @@ export class Game extends Scene {
   gridContainer: Phaser.GameObjects.Container;
   redKnight: Phaser.GameObjects.Sprite;
   blueKnight: Phaser.GameObjects.Sprite;
+  redDestination: Phaser.GameObjects.Image;
+  blueDestination: Phaser.GameObjects.Image;
   
   // UI
   uiContainer: Phaser.GameObjects.Container;
@@ -69,21 +71,21 @@ export class Game extends Scene {
     }
     
     // Destinations (no offset needed for baselevelfive)
-    const redFinal = this.add.image(
+    this.redDestination = this.add.image(
       (this.redFinalPos.x) * this.cellSize + this.cellSize / 2,
       (this.redFinalPos.y) * this.cellSize + this.cellSize / 2,
-      'redfinal'
+      'btn_red'
     );
-    redFinal.setDisplaySize(this.cellSize * 0.8, this.cellSize * 0.8);
-    this.gridContainer.add(redFinal);
+    this.redDestination.setDisplaySize(this.cellSize * 0.8, this.cellSize * 0.8);
+    this.gridContainer.add(this.redDestination);
 
-    const blueFinal = this.add.image(
+    this.blueDestination = this.add.image(
       (this.blueFinalPos.x) * this.cellSize + this.cellSize / 2,
       (this.blueFinalPos.y) * this.cellSize + this.cellSize / 2,
-      'bluefinal'
+      'btn_blue'
     );
-    blueFinal.setDisplaySize(this.cellSize * 0.8, this.cellSize * 0.8);
-    this.gridContainer.add(blueFinal);
+    this.blueDestination.setDisplaySize(this.cellSize * 0.8, this.cellSize * 0.8);
+    this.gridContainer.add(this.blueDestination);
   }
 
   createKnights() {
@@ -230,11 +232,18 @@ export class Game extends Scene {
   }
 
   updateKnightPositions(animate = false) {
+    // Update destination button states
+    const redOnDest = this.redPos.x === this.redFinalPos.x && this.redPos.y === this.redFinalPos.y;
+    this.redDestination.setTexture(redOnDest ? 'btn_red_pressed' : 'btn_red');
+
+    const blueOnDest = this.bluePos.x === this.blueFinalPos.x && this.bluePos.y === this.blueFinalPos.y;
+    this.blueDestination.setTexture(blueOnDest ? 'btn_blue_pressed' : 'btn_blue');
+
     const rx = (this.redPos.x) * this.cellSize + this.cellSize / 2;
-    const ry = (this.redPos.y) * this.cellSize + this.cellSize / 2;
+    const ry = (this.redPos.y) * this.cellSize + this.cellSize / 2 - 8;
     
     const bx = (this.bluePos.x) * this.cellSize + this.cellSize / 2;
-    const by = (this.bluePos.y) * this.cellSize + this.cellSize / 2;
+    const by = (this.bluePos.y) * this.cellSize + this.cellSize / 2 - 8;
 
     if (animate) {
       this.tweens.add({

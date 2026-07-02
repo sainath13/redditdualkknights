@@ -32,8 +32,12 @@ export class Preloader extends Scene {
     this.load.spritesheet('redknight', 'knights/red_knight_Idle.png', { frameWidth: 192, frameHeight: 192 });
     this.load.spritesheet('blueknight', 'knights/blue_knight_Idle.png', { frameWidth: 192, frameHeight: 192 });
     this.load.image('tile', 'knights/tilesingle.png');
-    this.load.image('bluefinal', 'knights/bluefinaltile.png');
-    this.load.image('redfinal', 'knights/redfinaltile.png');
+    
+    // Destinations
+    this.load.image('btn_red', 'destination/Button_Red.png');
+    this.load.image('btn_red_pressed', 'destination/Button_Red_Pressed.png');
+    this.load.image('btn_blue', 'destination/Button_Blue.png');
+    this.load.image('btn_blue_pressed', 'destination/Button_Blue_Pressed.png');
     // Map data
     this.load.tilemapTiledJSON('baselevelsix', 'tiledthings/levels/baselevelsix.json');
 
