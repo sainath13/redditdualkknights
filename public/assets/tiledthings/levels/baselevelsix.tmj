@@ -1,5 +1,5 @@
 { "compressionlevel":-1,
- "height":10,
+ "height":8,
  "infinite":false,
  "layers":[
         {
@@ -10,10 +10,8 @@
             55, 55, 55, 55, 55, 55,
             55, 55, 55, 55, 55, 55,
             55, 55, 55, 55, 55, 55,
-            55, 55, 55, 55, 55, 55,
-            55, 55, 55, 55, 55, 55,
             55, 55, 55, 55, 55, 55],
-         "height":10,
+         "height":8,
          "id":2,
          "name":"water",
          "opacity":1,
@@ -31,10 +29,8 @@
             10, 11, 11, 11, 11, 12,
             10, 11, 11, 11, 11, 12,
             10, 11, 11, 11, 11, 12,
-            10, 11, 11, 11, 11, 12,
-            10, 11, 11, 11, 11, 12,
             19, 20, 20, 20, 20, 21],
-         "height":10,
+         "height":8,
          "id":1,
          "name":"ground",
          "opacity":1,
@@ -53,25 +49,11 @@
  "tilesets":[
         {
          "firstgid":1,
-         "name":"Tilemap_color1",
-         "tilewidth":64,
-         "tileheight":64,
-         "tilecount":54,
-         "columns":9,
-         "image":"..\/Tilemap_color1.png",
-         "imagewidth":576,
-         "imageheight":384
+         "source":"..\/Tilemap_color1.tsx"
         }, 
         {
          "firstgid":55,
-         "name":"Water Background color",
-         "tilewidth":64,
-         "tileheight":64,
-         "tilecount":1,
-         "columns":1,
-         "image":"..\/WaterBackground.png",
-         "imagewidth":64,
-         "imageheight":64
+         "source":"..\/WaterBackground.tsx"
         }],
  "tilewidth":64,
  "type":"map",

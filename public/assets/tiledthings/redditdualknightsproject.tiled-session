@@ -63,6 +63,28 @@
                 "y": 319.67817633255106
             }
         },
+        "levels/baselevelfive.json": {
+            "scale": 1.396796875,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 192.2255159684546,
+                "y": 320.01789809273447
+            }
+        },
+        "levels/baselevelfive.json#Tilemap_color1": {
+            "scaleInDock": 1
+        },
+        "levels/baselevelfive.json#Water Background color": {
+            "scaleInDock": 1
+        },
+        "levels/baselevelsix.tmj": {
+            "scale": 1.7459960937499999,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 192.15392359751667,
+                "y": 256.01431847418763
+            }
+        },
         "levels/baseleveltwo.json": {
             "scale": 1.165234375,
             "selectedLayer": 0,
@@ -78,7 +100,7 @@
     },
     "last.exportedFilePath": "/Users/dream/redditknights/dual-knights/public/assets/tiledthings/levels",
     "last.imagePath": "/Users/dream/redditknights/dual-knights/public/assets/tiledthings",
-    "map.height": 10,
+    "map.height": 8,
     "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
     "map.lastUsedFormat": "json",
     "map.tileHeight": 64,
@@ -88,6 +110,8 @@
     ],
     "project": "redditdualknightsproject.tiled-project",
     "recentFiles": [
+        "levels/baselevelsix.tmj",
+        "levels/baselevelfive.json",
         "baselevelfour.json",
         "levels/baseLevelOne.json",
         "Tilemap_color1.tsx",

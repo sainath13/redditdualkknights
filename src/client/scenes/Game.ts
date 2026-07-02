@@ -6,7 +6,7 @@ export class Game extends Scene {
   
   // Grid config
   gridWidth = 6;
-  gridHeight = 9;
+  gridHeight = 8;
   cellSize = 64;
   
   // Game State
@@ -52,7 +52,7 @@ export class Game extends Scene {
   }
 
   createGrid() {
-    const map = this.make.tilemap({ key: 'baseLevelOne' });
+    const map = this.make.tilemap({ key: 'baselevelsix' });
     
     // Link the tileset names from Tiled to the image keys in Phaser
     const waterTileset = map.addTilesetImage('Water Background color', 'water_tiles');
@@ -66,18 +66,18 @@ export class Game extends Scene {
       if (groundLayer) this.gridContainer.add(groundLayer);
     }
     
-    // Destinations (offset by +1 tile)
+    // Destinations (no offset needed for baselevelfive)
     const redFinal = this.add.image(
-      (this.redFinalPos.x + 1) * this.cellSize + this.cellSize / 2,
-      (this.redFinalPos.y + 1) * this.cellSize + this.cellSize / 2,
+      (this.redFinalPos.x) * this.cellSize + this.cellSize / 2,
+      (this.redFinalPos.y) * this.cellSize + this.cellSize / 2,
       'redfinal'
     );
     redFinal.setDisplaySize(this.cellSize * 0.8, this.cellSize * 0.8);
     this.gridContainer.add(redFinal);
 
     const blueFinal = this.add.image(
-      (this.blueFinalPos.x + 1) * this.cellSize + this.cellSize / 2,
-      (this.blueFinalPos.y + 1) * this.cellSize + this.cellSize / 2,
+      (this.blueFinalPos.x) * this.cellSize + this.cellSize / 2,
+      (this.blueFinalPos.y) * this.cellSize + this.cellSize / 2,
       'bluefinal'
     );
     blueFinal.setDisplaySize(this.cellSize * 0.8, this.cellSize * 0.8);
@@ -139,12 +139,12 @@ export class Game extends Scene {
     this.cameras.resize(width, height);
 
     // Center grid
-    const totalGridWidth = 8 * this.cellSize;
-    const totalGridHeight = 12 * this.cellSize;
+    const totalGridWidth = 6 * this.cellSize;
+    const totalGridHeight = 8 * this.cellSize;
     
-    // Calculate base scale to fit screen, then multiply by 1.5x as requested
+    // Calculate base scale to fit screen, then multiply by 1.2x as requested
     let scaleFactor = Math.min(width / (totalGridWidth + 40), height / (totalGridHeight + 200), 1);
-    scaleFactor *= 1.5;
+    scaleFactor *= 1.1;
     
     this.gridContainer.setScale(scaleFactor);
     
@@ -207,11 +207,11 @@ export class Game extends Scene {
   }
 
   updateKnightPositions(animate = false) {
-    const rx = (this.redPos.x + 1) * this.cellSize + this.cellSize / 2;
-    const ry = (this.redPos.y + 1) * this.cellSize + this.cellSize / 2;
+    const rx = (this.redPos.x) * this.cellSize + this.cellSize / 2;
+    const ry = (this.redPos.y) * this.cellSize + this.cellSize / 2;
     
-    const bx = (this.bluePos.x + 1) * this.cellSize + this.cellSize / 2;
-    const by = (this.bluePos.y + 1) * this.cellSize + this.cellSize / 2;
+    const bx = (this.bluePos.x) * this.cellSize + this.cellSize / 2;
+    const by = (this.bluePos.y) * this.cellSize + this.cellSize / 2;
 
     if (animate) {
       this.tweens.add({
