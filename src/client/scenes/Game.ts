@@ -23,6 +23,8 @@ export class Game extends Scene {
   // UI
   uiContainer: Phaser.GameObjects.Container;
   gameOver = false;
+  selectedKnight: 'red' | 'blue' = 'red';
+  selectBtnText: Phaser.GameObjects.Text;
 
   constructor() {
     super('Game');
@@ -106,6 +108,7 @@ export class Game extends Scene {
     const scale = (this.cellSize * 0.9) / 94; 
     this.redKnight.setScale(scale);
     this.blueKnight.setScale(scale);
+    this.blueKnight.setFlipX(true);
     
     this.redKnight.play('red_idle');
     this.blueKnight.play('blue_idle');
@@ -119,9 +122,9 @@ export class Game extends Scene {
   createControls() {
     const createBtn = (x: number, y: number, label: string, dx: number, dy: number) => {
       const btn = this.add.text(x, y, label, {
-        fontSize: '48px',
+        fontSize: '36px',
         backgroundColor: '#444',
-        padding: { x: 10, y: 10 }
+        padding: { x: 8, y: 8 }
       }).setOrigin(0.5)
         .setInteractive({ useHandCursor: true })
         .on('pointerdown', () => this.move(dx, dy));
@@ -130,8 +133,22 @@ export class Game extends Scene {
 
     // Arrange buttons in a single horizontal line at the bottom
     createBtn(-150, 0, '⬅️', -1, 0);
-    createBtn(-50, 0, '⬇️', 0, 1);
-    createBtn(50, 0, '⬆️', 0, -1);
+    createBtn(-75, 0, '⬇️', 0, 1);
+    
+    // Toggle button in the center
+    this.selectBtnText = this.add.text(0, 0, '🔴', {
+      fontSize: '36px',
+      backgroundColor: '#444',
+      padding: { x: 8, y: 8 }
+    }).setOrigin(0.5)
+      .setInteractive({ useHandCursor: true })
+      .on('pointerdown', () => {
+        this.selectedKnight = this.selectedKnight === 'red' ? 'blue' : 'red';
+        this.selectBtnText.setText(this.selectedKnight === 'red' ? '🔴' : '🔵');
+      });
+    this.uiContainer.add(this.selectBtnText);
+
+    createBtn(75, 0, '⬆️', 0, -1);
     createBtn(150, 0, '➡️', 1, 0);
   }
 
@@ -163,6 +180,12 @@ export class Game extends Scene {
 
   move(dx: number, dy: number) {
     if (this.gameOver) return;
+
+    // If blue is selected, invert the movement inputs so the arrows control Blue directly.
+    if (this.selectedKnight === 'blue') {
+      dx = -dx;
+      dy = -dy;
+    }
 
     const oldRedX = this.redPos.x;
     const oldRedY = this.redPos.y;
