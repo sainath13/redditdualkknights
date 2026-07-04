@@ -477,20 +477,8 @@ export class Game extends Scene {
   createUI() {
     const margin = 20;
 
-    // Toggle button
-    const btn = this.add.container(margin, margin);
-    const bg = this.add.rectangle(0, 0, 180, 50, 0x333333).setOrigin(0);
-    bg.setInteractive({ useHandCursor: true });
-    
-    const text = this.add.text(90, 25, 'Switch to Blue', {
-      fontSize: '20px',
-      color: '#00aaff'
-    }).setOrigin(0.5);
-
-    btn.add([bg, text]);
-
     // Back to Menu
-    const backBtn = this.add.text(margin, margin + 70, '⬅ Menu', {
+    const backBtn = this.add.text(margin, margin, '⬅ Menu', {
       fontSize: '20px',
       backgroundColor: '#555',
       padding: { x: 10, y: 10 }
@@ -498,20 +486,14 @@ export class Game extends Scene {
       .on('pointerdown', () => this.scene.start('MainMenu'));
 
     // Step Count UI
-    this.stepText = this.add.text(margin, margin + 140, 'Steps: 0', {
+    this.stepText = this.add.text(margin, margin + 70, 'Steps: 0', {
       fontSize: '24px',
       color: '#ffffff',
       backgroundColor: '#222',
       padding: { x: 10, y: 10 }
     });
 
-    this.uiContainer.add([btn, backBtn, this.stepText]);
-
-    bg.on('pointerdown', () => {
-      this.selectedKnight = this.selectedKnight === 'red' ? 'blue' : 'red';
-      text.setText(`Switch to ${this.selectedKnight === 'red' ? 'Blue' : 'Red'}`);
-      text.setColor(this.selectedKnight === 'red' ? '#00aaff' : '#ffaa00');
-    });
+    this.uiContainer.add([backBtn, this.stepText]);
   }
 
   showPopup(msg: string) {
