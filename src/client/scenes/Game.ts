@@ -1,5 +1,5 @@
 import { Scene } from 'phaser';
-import { InitResponse } from '../../shared/api';
+import { InitResponse, LeaderboardEntry } from '../../shared/api';
 import * as Phaser from 'phaser';
 
 export class Game extends Scene {
@@ -18,6 +18,9 @@ export class Game extends Scene {
   
   obstacles: { type: string, x: number, y: number }[] = [];
   enemies: { type: string, x: number, y: number }[] = [];
+  
+  stepCount = 0;
+  stepText!: Phaser.GameObjects.Text;
   
   // Sprites
   gridContainer: Phaser.GameObjects.Container;
@@ -41,6 +44,7 @@ export class Game extends Scene {
     this.selectedKnight = 'red';
     this.obstacles = [];
     this.enemies = [];
+    this.stepCount = 0;
   }
 
   create() {
@@ -75,6 +79,7 @@ export class Game extends Scene {
         this.createGrid(mapKey);
         this.createKnights();
         this.createControls();
+        this.createUI();
 
         this.updateLayout(this.scale.width, this.scale.height);
       })
@@ -84,6 +89,7 @@ export class Game extends Scene {
         this.createGrid('baselevelnine');
         this.createKnights();
         this.createControls();
+        this.createUI();
         this.updateLayout(this.scale.width, this.scale.height);
       });
 
@@ -280,6 +286,10 @@ export class Game extends Scene {
   move(dx: number, dy: number) {
     if (this.gameOver) return;
 
+    // Increment step count on any move attempt
+    this.stepCount++;
+    this.stepText.setText(`Steps: ${this.stepCount}`);
+
     // If blue is selected, invert the movement inputs so the arrows control Blue directly.
     if (this.selectedKnight === 'blue') {
       dx = -dx;
@@ -383,9 +393,125 @@ export class Game extends Scene {
 
     if (this.redPos.x === this.redFinalPos.x && this.redPos.y === this.redFinalPos.y &&
         this.bluePos.x === this.blueFinalPos.x && this.bluePos.y === this.blueFinalPos.y) {
-      this.showPopup("Level Complete!");
       this.gameOver = true;
+      void this.showLeaderboardPopup();
     }
+  }
+
+  async showLeaderboardPopup() {
+    const popup = this.add.container(this.scale.width / 2, this.scale.height / 2);
+    
+    const bg = this.add.rectangle(0, 0, 500, 400, 0x000000, 0.9);
+    bg.setStrokeStyle(4, 0xffffff);
+    
+    const title = this.add.text(0, -160, 'Level Complete!', {
+      fontFamily: 'Arial',
+      fontSize: '32px',
+      color: '#ffcc00',
+      align: 'center'
+    }).setOrigin(0.5);
+
+    const scoreText = this.add.text(0, -110, `You finished in ${this.stepCount} steps!`, {
+      fontSize: '20px',
+      color: '#ffffff'
+    }).setOrigin(0.5);
+
+    const loadingText = this.add.text(0, -20, 'Submitting score...', {
+      fontSize: '20px', color: '#aaaaaa'
+    }).setOrigin(0.5);
+
+    popup.add([bg, title, scoreText, loadingText]);
+
+    const scaleFactor = Math.min(this.scale.width / 1024, this.scale.height / 768, 1);
+    popup.setScale(scaleFactor);
+
+    try {
+      // Submit score
+      await fetch('/api/submit-score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ score: this.stepCount })
+      });
+
+      // Fetch leaderboard
+      loadingText.setText('Loading Leaderboard...');
+      const lbRes = await fetch('/api/leaderboard');
+      const lbData = await lbRes.json();
+      
+      loadingText.destroy();
+
+      let lbString = "--- Top Players ---\n";
+      if (lbData.scores && lbData.scores.length > 0) {
+        lbData.scores.forEach((entry: LeaderboardEntry, index: number) => {
+          lbString += `${index + 1}. ${entry.member} - ${entry.score} steps\n`;
+        });
+      } else {
+        lbString += "No scores yet!";
+      }
+
+      const lbText = this.add.text(0, 0, lbString, {
+        fontSize: '20px',
+        color: '#88ff88',
+        align: 'left'
+      }).setOrigin(0.5, 0.5);
+
+      popup.add(lbText);
+
+    } catch (e) {
+      loadingText.setText('Failed to load leaderboard.');
+      console.error(e);
+    }
+
+    const okBtn = this.add.text(0, 150, 'Retry', {
+      fontSize: '24px',
+      backgroundColor: '#555',
+      padding: { x: 30, y: 10 }
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+      .on('pointerdown', () => {
+        this.scene.restart();
+      });
+
+    popup.add(okBtn);
+  }
+
+  createUI() {
+    const margin = 20;
+
+    // Toggle button
+    const btn = this.add.container(margin, margin);
+    const bg = this.add.rectangle(0, 0, 180, 50, 0x333333).setOrigin(0);
+    bg.setInteractive({ useHandCursor: true });
+    
+    const text = this.add.text(90, 25, 'Switch to Blue', {
+      fontSize: '20px',
+      color: '#00aaff'
+    }).setOrigin(0.5);
+
+    btn.add([bg, text]);
+
+    // Back to Menu
+    const backBtn = this.add.text(margin, margin + 70, '⬅ Menu', {
+      fontSize: '20px',
+      backgroundColor: '#555',
+      padding: { x: 10, y: 10 }
+    }).setInteractive({ useHandCursor: true })
+      .on('pointerdown', () => this.scene.start('MainMenu'));
+
+    // Step Count UI
+    this.stepText = this.add.text(margin, margin + 140, 'Steps: 0', {
+      fontSize: '24px',
+      color: '#ffffff',
+      backgroundColor: '#222',
+      padding: { x: 10, y: 10 }
+    });
+
+    this.uiContainer.add([btn, backBtn, this.stepText]);
+
+    bg.on('pointerdown', () => {
+      this.selectedKnight = this.selectedKnight === 'red' ? 'blue' : 'red';
+      text.setText(`Switch to ${this.selectedKnight === 'red' ? 'Blue' : 'Red'}`);
+      text.setColor(this.selectedKnight === 'red' ? '#00aaff' : '#ffaa00');
+    });
   }
 
   showPopup(msg: string) {

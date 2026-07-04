@@ -6,6 +6,9 @@ import type {
   InitResponse,
   PublishLevelRequest,
   PublishLevelResponse,
+  SubmitScoreRequest,
+  SubmitScoreResponse,
+  LeaderboardResponse,
 } from '../../shared/api';
 import { createPost } from '../core/post';
 
@@ -123,5 +126,55 @@ api.post('/publish-level', async (c) => {
       { status: 'error', message: 'Failed to publish custom level' },
       500
     );
+  }
+});
+
+api.post('/submit-score', async (c) => {
+  const { postId } = context;
+  const { score } = await c.req.json<SubmitScoreRequest>();
+  
+  if (!postId) return c.json<ErrorResponse>({ status: 'error', message: 'postId is required' }, 400);
+  if (typeof score !== 'number') return c.json<ErrorResponse>({ status: 'error', message: 'score is required' }, 400);
+
+  const username = (await reddit.getCurrentUsername()) ?? 'anonymous';
+  const leaderboardKey = `leaderboard_${postId}`;
+
+  try {
+    const currentScore = await redis.zScore(leaderboardKey, username);
+    let personalBest = false;
+
+    if (currentScore === undefined || score < currentScore) {
+      await redis.zAdd(leaderboardKey, { member: username, score });
+      personalBest = true;
+    }
+
+    return c.json<SubmitScoreResponse>({
+      type: 'submit_score',
+      score,
+      personalBest
+    });
+  } catch (error) {
+    console.error('Error submitting score:', error);
+    return c.json<ErrorResponse>({ status: 'error', message: 'Failed to submit score' }, 500);
+  }
+});
+
+api.get('/leaderboard', async (c) => {
+  const { postId } = context;
+  
+  if (!postId) return c.json<ErrorResponse>({ status: 'error', message: 'postId is required' }, 400);
+
+  const leaderboardKey = `leaderboard_${postId}`;
+
+  try {
+    // Get top 10 players (lowest scores)
+    const topScores = await redis.zRange(leaderboardKey, 0, 9, { by: 'rank' });
+    return c.json<LeaderboardResponse>({
+      type: 'leaderboard',
+      scores: topScores
+    });
+  } catch (error) {
+    console.error('Error fetching leaderboard:', error);
+    return c.json<ErrorResponse>({ status: 'error', message: 'Failed to fetch leaderboard' }, 500);
   }
 });
