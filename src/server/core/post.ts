@@ -1,7 +1,8 @@
-import { reddit } from '@devvit/web/server';
+import { reddit, context } from '@devvit/web/server';
 
-export const createPost = async () => {
+export const createPost = async (title: string = 'dual-knights') => {
   return await reddit.submitCustomPost({
-    title: 'dual-knights',
+    title: title,
+    subredditName: context.subredditName,
   });
 };

@@ -1,4 +1,5 @@
 import { Scene } from 'phaser';
+import { InitResponse } from '../../shared/api';
 import * as Phaser from 'phaser';
 
 export class Game extends Scene {
@@ -49,11 +50,43 @@ export class Game extends Scene {
     this.gridContainer = this.add.container(0, 0);
     this.uiContainer = this.add.container(0, 0);
 
-    this.createGrid();
-    this.createKnights();
-    this.createControls();
+    const loadingText = this.add.text(this.scale.width / 2, this.scale.height / 2, 'Loading Map...', {
+      fontSize: '24px',
+      color: '#ffffff',
+    }).setOrigin(0.5);
 
-    this.updateLayout(this.scale.width, this.scale.height);
+    // Fetch custom level data from Devvit backend
+    fetch('/api/init')
+      .then(res => res.json())
+      .then((data: InitResponse) => {
+        loadingText.destroy();
+        let mapKey = 'baselevelnine';
+
+        if (data.levelData) {
+          try {
+            const parsedMap = JSON.parse(data.levelData);
+            this.cache.tilemap.add('customLevel', { format: Phaser.Tilemaps.Formats.TILED_JSON, data: parsedMap });
+            mapKey = 'customLevel';
+          } catch (e) {
+            console.error('Failed to parse custom level data:', e);
+          }
+        }
+
+        this.createGrid(mapKey);
+        this.createKnights();
+        this.createControls();
+
+        this.updateLayout(this.scale.width, this.scale.height);
+      })
+      .catch(err => {
+        console.error('Error fetching /api/init:', err);
+        loadingText.destroy();
+        this.createGrid('baselevelnine');
+        this.createKnights();
+        this.createControls();
+        this.updateLayout(this.scale.width, this.scale.height);
+      });
+
     this.scale.on('resize', (gameSize: Phaser.Structs.Size) => {
       this.updateLayout(gameSize.width, gameSize.height);
     });
@@ -65,8 +98,8 @@ export class Game extends Scene {
     this.input.keyboard?.on('keydown-RIGHT', () => this.move(1, 0));
   }
 
-  createGrid() {
-    const map = this.make.tilemap({ key: 'baselevelnine' });
+  createGrid(mapKey: string) {
+    const map = this.make.tilemap({ key: mapKey });
     
     // Link the tileset names from Tiled to the image keys in Phaser
     const waterTileset = map.addTilesetImage('Water Background color', 'water_tiles');

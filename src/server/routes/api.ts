@@ -4,7 +4,10 @@ import type {
   DecrementResponse,
   IncrementResponse,
   InitResponse,
+  PublishLevelRequest,
+  PublishLevelResponse,
 } from '../../shared/api';
+import { createPost } from '../core/post';
 
 type ErrorResponse = {
   status: 'error';
@@ -28,9 +31,10 @@ api.get('/init', async (c) => {
   }
 
   try {
-    const [count, username] = await Promise.all([
+    const [count, username, levelData] = await Promise.all([
       redis.get('count'),
       reddit.getCurrentUsername(),
+      redis.get(`level_${postId}`)
     ]);
 
     return c.json<InitResponse>({
@@ -38,6 +42,7 @@ api.get('/init', async (c) => {
       postId: postId,
       count: count ? parseInt(count) : 0,
       username: username ?? 'anonymous',
+      levelData: levelData ?? undefined,
     });
   } catch (error) {
     console.error(`API Init Error for post ${postId}:`, error);
@@ -90,4 +95,33 @@ api.post('/decrement', async (c) => {
     postId,
     type: 'decrement',
   });
+});
+
+api.post('/publish-level', async (c) => {
+  const { title, levelData } = await c.req.json<PublishLevelRequest>();
+  if (!title || !levelData) {
+    return c.json<ErrorResponse>(
+      { status: 'error', message: 'title and levelData are required' },
+      400
+    );
+  }
+
+  try {
+    const post = await createPost(title);
+    
+    // Store level data in Redis using the new post's ID
+    await redis.set(`level_${post.id}`, levelData);
+
+    return c.json<PublishLevelResponse>({
+      type: 'publish_level',
+      postId: post.id,
+      url: `https://reddit.com/r/${context.subredditName}/comments/${post.id}`,
+    });
+  } catch (error) {
+    console.error('Error publishing level:', error);
+    return c.json<ErrorResponse>(
+      { status: 'error', message: 'Failed to publish custom level' },
+      500
+    );
+  }
 });

@@ -1,4 +1,5 @@
 import { Scene, GameObjects } from 'phaser';
+import { navigateTo } from '@devvit/web/client';
 import * as Phaser from 'phaser';
 
 type BrushType = 'water' | 'red_start' | 'blue_start' | 'red_dest' | 'blue_dest'
@@ -39,7 +40,7 @@ export class LevelDesigner extends Scene {
   gridContainer!: GameObjects.Container;
   uiContainer!: GameObjects.Container;
   brushText!: GameObjects.Text;
-  exportBtn!: GameObjects.Text;
+  publishBtn!: GameObjects.Text;
   
   tileImages: GameObjects.Image[][] = [];
   obstacleImages: GameObjects.Image[] = [];
@@ -81,14 +82,14 @@ export class LevelDesigner extends Scene {
     }).setInteractive({ useHandCursor: true })
       .on('pointerdown', () => this.scene.start('MainMenu'));
 
-    // Add Export Button
-    this.exportBtn = this.add.text(this.scale.width - 20, 20, 'Export JSON ➡', {
+    // Publish button
+    this.publishBtn = this.add.text(this.scale.width - 20, 20, 'Publish to Reddit', {
       fontSize: '24px',
-      backgroundColor: '#28a745',
-      padding: { x: 10, y: 10 }
+      backgroundColor: '#47aba9',
+      padding: { x: 20, y: 10 }
     }).setOrigin(1, 0).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => this.exportMap());
-
+      .on('pointerdown', () => this.showPublishPrompt(this.generateMapJSON()));
+    
     this.updateLayout(this.scale.width, this.scale.height);
     this.scale.on('resize', (gameSize: Phaser.Structs.Size) => {
       this.updateLayout(gameSize.width, gameSize.height);
@@ -353,12 +354,7 @@ export class LevelDesigner extends Scene {
     });
   }
 
-  exportMap() {
-    if (!this.redStart || !this.blueStart || !this.redDest || !this.blueDest) {
-      this.showToast("Missing knights or destinations!");
-      return;
-    }
-
+  generateMapJSON(): string {
     const groundData: number[] = [];
     const waterData: number[] = [];
 
@@ -371,10 +367,10 @@ export class LevelDesigner extends Scene {
     }
 
     const objectsList = [
-      { "id": 1, "name": "red_start", "x": this.redStart.x * this.cellSize, "y": this.redStart.y * this.cellSize, "width": 0, "height": 0 },
-      { "id": 2, "name": "blue_start", "x": this.blueStart.x * this.cellSize, "y": this.blueStart.y * this.cellSize, "width": 0, "height": 0 },
-      { "id": 3, "name": "red_dest", "x": this.redDest.x * this.cellSize, "y": this.redDest.y * this.cellSize, "width": 0, "height": 0 },
-      { "id": 4, "name": "blue_dest", "x": this.blueDest.x * this.cellSize, "y": this.blueDest.y * this.cellSize, "width": 0, "height": 0 }
+      { "id": 1, "name": "red_start", "x": this.redStart!.x * this.cellSize, "y": this.redStart!.y * this.cellSize, "width": 0, "height": 0 },
+      { "id": 2, "name": "blue_start", "x": this.blueStart!.x * this.cellSize, "y": this.blueStart!.y * this.cellSize, "width": 0, "height": 0 },
+      { "id": 3, "name": "red_dest", "x": this.redDest!.x * this.cellSize, "y": this.redDest!.y * this.cellSize, "width": 0, "height": 0 },
+      { "id": 4, "name": "blue_dest", "x": this.blueDest!.x * this.cellSize, "y": this.blueDest!.y * this.cellSize, "width": 0, "height": 0 }
     ];
 
     const obstaclesList = this.obstacles.map((obs, i) => ({
@@ -482,15 +478,108 @@ export class LevelDesigner extends Scene {
       "width": this.gridWidth
     };
 
-    const jsonString = JSON.stringify(json, null, 2);
+    return JSON.stringify(json, null, 2);
+  }
+
+  showPublishPrompt(jsonString: string) {
+    if (!this.redStart || !this.blueStart || !this.redDest || !this.blueDest) {
+      alert('You must place both Knights and their Destinations before publishing!');
+      return;
+    }
+
+    // Create an HTML overlay
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100vw';
+    overlay.style.height = '100vh';
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+    overlay.style.display = 'flex';
+    overlay.style.flexDirection = 'column';
+    overlay.style.justifyContent = 'center';
+    overlay.style.alignItems = 'center';
+    overlay.style.zIndex = '1000';
+    overlay.style.color = 'white';
+    overlay.style.fontFamily = 'Arial, sans-serif';
+
+    const title = document.createElement('h2');
+    title.innerText = 'Publish Level to Reddit';
     
-    // Attempt to copy to clipboard
-    navigator.clipboard.writeText(jsonString).then(() => {
-      this.showToast("Map copied to clipboard!");
-    }).catch(() => {
-      this.showToast("Failed to copy clipboard. Check dev tools console.");
-      console.log("Map JSON:", jsonString);
-    });
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = 'Enter a catchy name for your level...';
+    input.style.padding = '10px';
+    input.style.fontSize = '18px';
+    input.style.width = '80%';
+    input.style.maxWidth = '400px';
+    input.style.marginBottom = '20px';
+    input.style.borderRadius = '5px';
+    input.style.border = 'none';
+
+    const btnContainer = document.createElement('div');
+    btnContainer.style.display = 'flex';
+    btnContainer.style.gap = '20px';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.innerText = 'Cancel';
+    cancelBtn.style.padding = '10px 20px';
+    cancelBtn.style.fontSize = '18px';
+    cancelBtn.style.cursor = 'pointer';
+    cancelBtn.onclick = () => overlay.remove();
+
+    const publishBtn = document.createElement('button');
+    publishBtn.innerText = 'Publish';
+    publishBtn.style.padding = '10px 20px';
+    publishBtn.style.fontSize = '18px';
+    publishBtn.style.backgroundColor = '#47aba9';
+    publishBtn.style.color = 'white';
+    publishBtn.style.border = 'none';
+    publishBtn.style.borderRadius = '5px';
+    publishBtn.style.cursor = 'pointer';
+
+    publishBtn.onclick = async () => {
+      const levelTitle = input.value.trim();
+      if (!levelTitle) {
+        input.style.border = '2px solid red';
+        return;
+      }
+      publishBtn.innerText = 'Publishing...';
+      publishBtn.disabled = true;
+
+      try {
+        const res = await fetch('/api/publish-level', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: levelTitle,
+            levelData: jsonString
+          })
+        });
+        const data = await res.json();
+        if (data.url) {
+          overlay.remove();
+          navigateTo(data.url);
+        } else {
+          publishBtn.innerText = 'Failed';
+          publishBtn.disabled = false;
+        }
+      } catch (e) {
+        console.error(e);
+        publishBtn.innerText = 'Error';
+        publishBtn.disabled = false;
+      }
+    };
+
+    btnContainer.appendChild(cancelBtn);
+    btnContainer.appendChild(publishBtn);
+
+    overlay.appendChild(title);
+    overlay.appendChild(input);
+    overlay.appendChild(btnContainer);
+
+    document.body.appendChild(overlay);
+    input.focus();
   }
 
   showToast(msg: string) {
@@ -512,7 +601,7 @@ export class LevelDesigner extends Scene {
 
   updateLayout(width: number, height: number) {
     this.cameras.resize(width, height);
-    this.exportBtn.setPosition(width - 20, 20);
+    this.publishBtn.setPosition(width - 20, 20);
 
     const totalGridWidth = this.gridWidth * this.cellSize;
     const totalGridHeight = this.gridHeight * this.cellSize;
