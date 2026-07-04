@@ -5,6 +5,9 @@
     },
     "activeFile": "",
     "expandedProjectPaths": [
+        "levels",
+        ".",
+        "tilesets"
     ],
     "fileStates": {
         "Tilemap_color1.tsx": {

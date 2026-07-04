@@ -38,8 +38,27 @@ export class Preloader extends Scene {
     this.load.image('btn_red_pressed', 'destination/Button_Red_Pressed.png');
     this.load.image('btn_blue', 'destination/Button_Blue.png');
     this.load.image('btn_blue_pressed', 'destination/Button_Blue_Pressed.png');
+
+    // Ground tiles for Level Designer
+    this.load.image('tile_top_left', 'tiles_for_ground/top_left_edge.png');
+    this.load.image('tile_top_mid', 'tiles_for_ground/top_middle_edge.png');
+    this.load.image('tile_top_right', 'tiles_for_ground/top_right_edge.png');
+    this.load.image('tile_mid_left', 'tiles_for_ground/mid_left_edge.png');
+    this.load.image('tile_middle', 'tiles_for_ground/middle.png');
+    this.load.image('tile_mid_right', 'tiles_for_ground/mid_right_edge.png');
+    this.load.image('tile_bot_left', 'tiles_for_ground/bottom_left_edge.png');
+    this.load.image('tile_bot_mid', 'tiles_for_ground/bottom_mid_edge.png');
+    this.load.image('tile_bot_right', 'tiles_for_ground/bottom_right_edge.png');
+    
+    // Obstacles
+    this.load.image('obs_bush1', 'obstacles/bush1.png');
+    this.load.image('obs_pumpkin1', 'obstacles/pumpkin1.png');
+    this.load.image('obs_pumpkin2', 'obstacles/pumpkin2.png');
+    this.load.image('obs_rock', 'obstacles/rock.png');
+    // Enemies
+    this.load.image('enemy_barrel', 'enemy/singleredbarel.png');
     // Map data
-    this.load.tilemapTiledJSON('baselevelsix', 'tiledthings/levels/baselevelsix.json');
+    this.load.tilemapTiledJSON('baselevelnine', 'tiledthings/levels/baselevelnine.json');
 
     // Landscape tilemap
     this.load.image('landscape_tiles', 'tiledthings/Tilemap_color1.png');

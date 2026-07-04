@@ -4,6 +4,8 @@ export class MainMenu extends Scene {
   background: GameObjects.Image | null = null;
   logo: GameObjects.Image | null = null;
   title: GameObjects.Text | null = null;
+  playBtn: GameObjects.Text | null = null;
+  designerBtn: GameObjects.Text | null = null;
 
   constructor() {
     super('MainMenu');
@@ -18,6 +20,8 @@ export class MainMenu extends Scene {
     this.background = null;
     this.logo = null;
     this.title = null;
+    this.playBtn = null;
+    this.designerBtn = null;
   }
 
   create() {
@@ -25,10 +29,6 @@ export class MainMenu extends Scene {
 
     // Re-calculate positions whenever the game canvas is resized (e.g. orientation change).
     this.scale.on('resize', () => this.refreshLayout());
-
-    this.input.once('pointerdown', () => {
-      this.scene.start('Game');
-    });
   }
 
   /**
@@ -71,5 +71,64 @@ export class MainMenu extends Scene {
     }
     this.title!.setPosition(width / 2, height * 0.6);
     this.title!.setScale(scaleFactor);
+
+    // Play Button
+    if (!this.playBtn) {
+      this.playBtn = this.add.text(0, 0, 'Play Game', {
+        fontSize: '32px',
+        backgroundColor: '#444',
+        padding: { x: 20, y: 10 }
+      }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+        .on('pointerdown', () => this.scene.start('Game'));
+    }
+    this.playBtn!.setPosition(width / 2, height * 0.75);
+    this.playBtn!.setScale(scaleFactor);
+
+    // Designer Button
+    if (!this.designerBtn) {
+      this.designerBtn = this.add.text(0, 0, 'Level Designer', {
+        fontSize: '32px',
+        backgroundColor: '#444',
+        padding: { x: 20, y: 10 }
+      }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+        .on('pointerdown', () => {
+          if (this.sys.game.device.os.desktop) {
+            this.scene.start('LevelDesigner');
+          } else {
+            this.showPopup("The Level Designer is\nonly available on Desktop.");
+          }
+        });
+    }
+    this.designerBtn!.setPosition(width / 2, height * 0.85);
+    this.designerBtn!.setScale(scaleFactor);
+  }
+
+  showPopup(msg: string) {
+    const popup = this.add.container(this.scale.width / 2, this.scale.height / 2);
+    
+    const bg = this.add.rectangle(0, 0, 400, 200, 0x000000, 0.9);
+    bg.setStrokeStyle(4, 0xffffff);
+    
+    const text = this.add.text(0, -20, msg, {
+      fontFamily: 'Arial',
+      fontSize: '24px',
+      color: '#ffffff',
+      align: 'center'
+    }).setOrigin(0.5);
+
+    const okBtn = this.add.text(0, 60, 'OK', {
+      fontSize: '24px',
+      backgroundColor: '#555',
+      padding: { x: 30, y: 10 }
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+      .on('pointerdown', () => {
+        popup.destroy();
+      });
+
+    popup.add([bg, text, okBtn]);
+    
+    // Scale popup with game size
+    const scaleFactor = Math.min(this.scale.width / 1024, this.scale.height / 768, 1);
+    popup.setScale(scaleFactor);
   }
 }

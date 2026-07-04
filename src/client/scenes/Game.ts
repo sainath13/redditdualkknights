@@ -15,6 +15,9 @@ export class Game extends Scene {
   redFinalPos = { x: 1, y: 0 };
   blueFinalPos = { x: 4, y: 4 };
   
+  obstacles: { type: string, x: number, y: number }[] = [];
+  enemies: { type: string, x: number, y: number }[] = [];
+  
   // Sprites
   gridContainer: Phaser.GameObjects.Container;
   redKnight: Phaser.GameObjects.Sprite;
@@ -30,6 +33,13 @@ export class Game extends Scene {
 
   constructor() {
     super('Game');
+  }
+
+  init() {
+    this.gameOver = false;
+    this.selectedKnight = 'red';
+    this.obstacles = [];
+    this.enemies = [];
   }
 
   create() {
@@ -56,7 +66,7 @@ export class Game extends Scene {
   }
 
   createGrid() {
-    const map = this.make.tilemap({ key: 'baselevelsix' });
+    const map = this.make.tilemap({ key: 'baselevelnine' });
     
     // Link the tileset names from Tiled to the image keys in Phaser
     const waterTileset = map.addTilesetImage('Water Background color', 'water_tiles');
@@ -70,6 +80,60 @@ export class Game extends Scene {
       if (groundLayer) this.gridContainer.add(groundLayer);
     }
     
+    const spawnLayer = map.getObjectLayer('spawn_points');
+    if (spawnLayer && spawnLayer.objects) {
+      spawnLayer.objects.forEach(obj => {
+        const gx = Math.floor((obj.x || 0) / this.cellSize);
+        const gy = Math.floor((obj.y || 0) / this.cellSize);
+        if (obj.name === 'red_start') this.redPos = { x: gx, y: gy };
+        if (obj.name === 'blue_start') this.bluePos = { x: gx, y: gy };
+        if (obj.name === 'red_dest') this.redFinalPos = { x: gx, y: gy };
+        if (obj.name === 'blue_dest') this.blueFinalPos = { x: gx, y: gy };
+      });
+    }
+
+    const obsLayer = map.getObjectLayer('obstacles');
+    if (obsLayer && obsLayer.objects) {
+      obsLayer.objects.forEach(obj => {
+        const gx = Math.floor((obj.x || 0) / this.cellSize);
+        const gy = Math.floor((obj.y || 0) / this.cellSize);
+        this.obstacles.push({ type: obj.name, x: gx, y: gy });
+      });
+    }
+
+    // Render obstacles
+    this.obstacles.forEach(obs => {
+      const img = this.add.image(
+        obs.x * this.cellSize + this.cellSize / 2, 
+        obs.y * this.cellSize + this.cellSize / 2 - 8,
+        obs.type
+      );
+      const scale = (this.cellSize * 0.9) / img.width;
+      img.setScale(scale);
+      this.gridContainer.add(img);
+    });
+
+    const enemiesLayer = map.getObjectLayer('enemies');
+    if (enemiesLayer && enemiesLayer.objects) {
+      enemiesLayer.objects.forEach(obj => {
+        const gx = Math.floor((obj.x || 0) / this.cellSize);
+        const gy = Math.floor((obj.y || 0) / this.cellSize);
+        this.enemies.push({ type: obj.name, x: gx, y: gy });
+      });
+    }
+
+    // Render enemies
+    this.enemies.forEach(enemy => {
+      const img = this.add.image(
+        enemy.x * this.cellSize + this.cellSize / 2, 
+        enemy.y * this.cellSize + this.cellSize / 2 - 8,
+        enemy.type
+      );
+      const scale = (this.cellSize * 0.9) / img.width;
+      img.setScale(scale);
+      this.gridContainer.add(img);
+    });
+
     // Destinations (no offset needed for baselevelfive)
     this.redDestination = this.add.image(
       (this.redFinalPos.x) * this.cellSize + this.cellSize / 2,
@@ -189,6 +253,12 @@ export class Game extends Scene {
       dy = -dy;
     }
 
+    const isBlocked = (x: number, y: number) => {
+      if (x < 0 || x >= this.gridWidth || y < 0 || y >= this.gridHeight) return true;
+      if (this.obstacles.some(o => o.x === x && o.y === y)) return true;
+      return false;
+    };
+
     const oldRedX = this.redPos.x;
     const oldRedY = this.redPos.y;
     const oldBlueX = this.bluePos.x;
@@ -198,7 +268,7 @@ export class Game extends Scene {
     const newRedX = this.redPos.x + dx;
     const newRedY = this.redPos.y + dy;
     
-    if (newRedX >= 0 && newRedX < this.gridWidth && newRedY >= 0 && newRedY < this.gridHeight) {
+    if (!isBlocked(newRedX, newRedY)) {
       this.redPos.x = newRedX;
       this.redPos.y = newRedY;
       redMoved = true;
@@ -208,7 +278,7 @@ export class Game extends Scene {
     const newBlueX = this.bluePos.x - dx; // opposite direction
     const newBlueY = this.bluePos.y - dy; // opposite direction
     
-    if (newBlueX >= 0 && newBlueX < this.gridWidth && newBlueY >= 0 && newBlueY < this.gridHeight) {
+    if (!isBlocked(newBlueX, newBlueY)) {
       this.bluePos.x = newBlueX;
       this.bluePos.y = newBlueY;
       blueMoved = true;
@@ -267,6 +337,13 @@ export class Game extends Scene {
   checkWinCondition() {
     if (this.redPos.x === this.bluePos.x && this.redPos.y === this.bluePos.y) {
       this.showPopup("Game Over!\nKnights collided.");
+      this.gameOver = true;
+      return;
+    }
+
+    if (this.enemies.some(e => e.x === this.redPos.x && e.y === this.redPos.y) || 
+        this.enemies.some(e => e.x === this.bluePos.x && e.y === this.bluePos.y)) {
+      this.showPopup("Game Over!\nYou hit a barrel!");
       this.gameOver = true;
       return;
     }
