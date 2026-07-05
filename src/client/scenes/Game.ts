@@ -233,7 +233,8 @@ export class Game extends Scene {
           gy * this.cellSize + this.cellSize / 2,
           obj.name
         );
-        const scale = this.cellSize / img.width;
+        // Overlap slightly by 1 pixel to prevent subpixel rendering gaps
+        const scale = (this.cellSize + 1.0) / img.width;
         img.setScale(scale);
         this.gridContainer.add(img);
       });

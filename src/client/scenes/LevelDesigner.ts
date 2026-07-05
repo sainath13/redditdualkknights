@@ -268,7 +268,8 @@ export class LevelDesigner extends Scene {
         cg.y * this.cellSize + this.cellSize / 2,
         cg.type
       );
-      const scale = this.cellSize / img.width;
+      // Overlap slightly by 1 pixel to prevent subpixel rendering gaps
+      const scale = (this.cellSize + 1.0) / img.width;
       img.setScale(scale);
       img.setDepth(1);
       this.gridContainer.add(img);
