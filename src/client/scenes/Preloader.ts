@@ -86,6 +86,9 @@ export class Preloader extends Scene {
     this.load.image('cliff_ground_top_mid', 'cliff_ground/top_middle_edge_on_cliff.png');
     this.load.image('cliff_ground_top_right', 'cliff_ground/top_right_edge_on_cliff.png');
     
+    // Base Level Data Manifest
+    this.load.json('baselevelmanifest', 'baseleveldata/baseleveldatainformation.json');
+    
     // HUD buttons
     this.load.image('btn_close', 'other_buttons/close_button.png');
     this.load.image('btn_close_pressed', 'other_buttons/close_button_pressed.png');

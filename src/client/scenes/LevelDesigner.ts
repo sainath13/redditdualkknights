@@ -55,6 +55,8 @@ export class LevelDesigner extends Scene {
   brushText!: GameObjects.Text;
   publishBtn!: GameObjects.Text;
   
+  jsonOutput: HTMLTextAreaElement | null = null;
+  
   tileImages: GameObjects.Image[][] = [];
   entitySprites: Record<string, GameObjects.Image | GameObjects.Sprite> = {};
 
@@ -62,20 +64,102 @@ export class LevelDesigner extends Scene {
     super('LevelDesigner');
   }
 
+  init(data?: { baseMap?: any }) {
+    // Clear old state across restarts
+    this.mapData = [];
+    this.obstacles = [];
+    this.enemies = [];
+    this.cliffGrounds = [];
+    this.redStart = null;
+    this.blueStart = null;
+    this.redDest = null;
+    this.blueDest = null;
+    this.obstacleImages = [];
+    this.enemyImages = [];
+    this.cliffGroundImages = [];
+    this.jsonOutput = null;
+
+    if (data && data.baseMap) {
+      this.parseBaseMap(data.baseMap);
+    }
+  }
+
+  parseBaseMap(mapJson: any) {
+    this.gridWidth = mapJson.width || 6;
+    this.gridHeight = mapJson.height || 8;
+    
+    for (let y = 0; y < this.gridHeight; y++) {
+      const row: number[] = [];
+      for (let x = 0; x < this.gridWidth; x++) {
+        row.push(0);
+      }
+      this.mapData.push(row);
+    }
+    
+    if (mapJson.layers) {
+      mapJson.layers.forEach((layer: any) => {
+        if (layer.name === 'ground' && layer.data) {
+          for (let i = 0; i < layer.data.length; i++) {
+            const x = i % this.gridWidth;
+            const y = Math.floor(i / this.gridWidth);
+            if (this.mapData[y]) {
+              this.mapData[y]![x] = layer.data[i];
+            }
+          }
+        }
+        else if (layer.name === 'spawn_points' && layer.objects) {
+          layer.objects.forEach((obj: any) => {
+            const gx = Math.floor((obj.x || 0) / this.cellSize);
+            const gy = Math.floor((obj.y || 0) / this.cellSize);
+            if (obj.name === 'red_start') this.redStart = { x: gx, y: gy };
+            if (obj.name === 'blue_start') this.blueStart = { x: gx, y: gy };
+            if (obj.name === 'red_dest') this.redDest = { x: gx, y: gy };
+            if (obj.name === 'blue_dest') this.blueDest = { x: gx, y: gy };
+          });
+        }
+        else if (layer.name === 'obstacles' && layer.objects) {
+          layer.objects.forEach((obj: any) => {
+            const gx = Math.floor((obj.x || 0) / this.cellSize);
+            const gy = Math.floor((obj.y || 0) / this.cellSize);
+            this.obstacles.push({ type: obj.name, x: gx, y: gy });
+          });
+        }
+        else if (layer.name === 'enemies' && layer.objects) {
+          layer.objects.forEach((obj: any) => {
+            const gx = Math.floor((obj.x || 0) / this.cellSize);
+            const gy = Math.floor((obj.y || 0) / this.cellSize);
+            this.enemies.push({ type: obj.name, x: gx, y: gy });
+          });
+        }
+        else if (layer.name === 'cliff_grounds' && layer.objects) {
+          layer.objects.forEach((obj: any) => {
+            const gx = Math.floor((obj.x || 0) / this.cellSize);
+            const gy = Math.floor((obj.y || 0) / this.cellSize);
+            this.cliffGrounds.push({ type: obj.name, x: gx, y: gy });
+          });
+        }
+      });
+    }
+  }
+
   create() {
     this.cameras.main.setBackgroundColor(0x222222);
 
-    // Initialize blank map (all water)
-    this.mapData = [];
+    // Initialize map if not loaded from baseMap
+    const isMapEmpty = this.mapData.length === 0;
     this.tileImages = [];
     for (let y = 0; y < this.gridHeight; y++) {
-      const dataRow: number[] = [];
+      if (isMapEmpty) {
+        const dataRow: number[] = [];
+        for (let x = 0; x < this.gridWidth; x++) {
+          dataRow.push(0); // default water
+        }
+        this.mapData.push(dataRow);
+      }
       const imgRow: GameObjects.Image[] = [];
       for (let x = 0; x < this.gridWidth; x++) {
-        dataRow.push(0); // default water
         imgRow.push(null as unknown as GameObjects.Image);
       }
-      this.mapData.push(dataRow);
       this.tileImages.push(imgRow);
     }
 
@@ -100,6 +184,31 @@ export class LevelDesigner extends Scene {
       padding: { x: 20, y: 10 }
     }).setOrigin(1, 0).setInteractive({ useHandCursor: true })
       .on('pointerdown', () => this.showPublishPrompt(this.generateMapJSON()));
+      
+    // Visible JSON Output Area for manual copying
+    this.jsonOutput = document.createElement('textarea');
+    this.jsonOutput.style.position = 'absolute';
+    this.jsonOutput.style.bottom = '10px';
+    this.jsonOutput.style.left = '50%';
+    this.jsonOutput.style.transform = 'translateX(-50%)';
+    this.jsonOutput.style.width = '60%';
+    this.jsonOutput.style.height = '100px';
+    this.jsonOutput.style.zIndex = '1000';
+    this.jsonOutput.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+    this.jsonOutput.style.color = '#47aba9';
+    this.jsonOutput.style.padding = '10px';
+    this.jsonOutput.style.fontFamily = 'monospace';
+    this.jsonOutput.style.fontSize = '12px';
+    this.jsonOutput.style.borderRadius = '5px';
+    this.jsonOutput.readOnly = true;
+    document.body.appendChild(this.jsonOutput);
+
+    this.events.on('shutdown', () => {
+      if (this.jsonOutput) {
+        this.jsonOutput.remove();
+        this.jsonOutput = null;
+      }
+    });
     
     this.updateLayout(this.scale.width, this.scale.height);
     this.scale.on('resize', (gameSize: Phaser.Structs.Size) => {
@@ -317,6 +426,10 @@ export class LevelDesigner extends Scene {
     if (this.entitySprites['blue_dest']) this.gridContainer.bringToTop(this.entitySprites['blue_dest']);
     if (this.entitySprites['red_start']) this.gridContainer.bringToTop(this.entitySprites['red_start']);
     if (this.entitySprites['blue_start']) this.gridContainer.bringToTop(this.entitySprites['blue_start']);
+    
+    if (this.jsonOutput) {
+      this.jsonOutput.value = this.generateMapJSON();
+    }
   }
 
   createPalette() {
@@ -430,12 +543,11 @@ export class LevelDesigner extends Scene {
       }
     }
 
-    const objectsList = [
-      { "id": 1, "name": "red_start", "x": this.redStart!.x * this.cellSize, "y": this.redStart!.y * this.cellSize, "width": 0, "height": 0 },
-      { "id": 2, "name": "blue_start", "x": this.blueStart!.x * this.cellSize, "y": this.blueStart!.y * this.cellSize, "width": 0, "height": 0 },
-      { "id": 3, "name": "red_dest", "x": this.redDest!.x * this.cellSize, "y": this.redDest!.y * this.cellSize, "width": 0, "height": 0 },
-      { "id": 4, "name": "blue_dest", "x": this.blueDest!.x * this.cellSize, "y": this.blueDest!.y * this.cellSize, "width": 0, "height": 0 }
-    ];
+    const objectsList = [];
+    if (this.redStart) objectsList.push({ "id": 1, "name": "red_start", "x": this.redStart.x * this.cellSize, "y": this.redStart.y * this.cellSize, "width": 0, "height": 0 });
+    if (this.blueStart) objectsList.push({ "id": 2, "name": "blue_start", "x": this.blueStart.x * this.cellSize, "y": this.blueStart.y * this.cellSize, "width": 0, "height": 0 });
+    if (this.redDest) objectsList.push({ "id": 3, "name": "red_dest", "x": this.redDest.x * this.cellSize, "y": this.redDest.y * this.cellSize, "width": 0, "height": 0 });
+    if (this.blueDest) objectsList.push({ "id": 4, "name": "blue_dest", "x": this.blueDest.x * this.cellSize, "y": this.blueDest.y * this.cellSize, "width": 0, "height": 0 });
 
     const obstaclesList = this.obstacles.map((obs, i) => ({
       "id": 100 + i,

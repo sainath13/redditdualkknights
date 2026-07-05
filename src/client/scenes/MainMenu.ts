@@ -93,7 +93,7 @@ export class MainMenu extends Scene {
       }).setOrigin(0.5).setInteractive({ useHandCursor: true })
         .on('pointerdown', () => {
           if (this.sys.game.device.os.desktop) {
-            this.scene.start('LevelDesigner');
+            this.showBaseSelectionPopup();
           } else {
             this.showPopup("The Level Designer is\nonly available on Desktop.");
           }
@@ -101,6 +101,93 @@ export class MainMenu extends Scene {
     }
     this.designerBtn!.setPosition(width / 2, height * 0.85);
     this.designerBtn!.setScale(scaleFactor);
+  }
+
+  private showBaseSelectionPopup() {
+    const overlay = document.createElement('div');
+    overlay.style.position = 'absolute';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100vw';
+    overlay.style.height = '100vh';
+    overlay.style.backgroundColor = 'rgba(0,0,0,0.8)';
+    overlay.style.display = 'flex';
+    overlay.style.flexDirection = 'column';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.style.zIndex = '1000';
+
+    const title = document.createElement('h1');
+    title.innerText = 'Select Base Level';
+    title.style.color = 'white';
+    title.style.fontFamily = 'Arial, sans-serif';
+    title.style.marginBottom = '20px';
+    overlay.appendChild(title);
+
+    const btnContainer = document.createElement('div');
+    btnContainer.style.display = 'flex';
+    btnContainer.style.flexDirection = 'column';
+    btnContainer.style.gap = '10px';
+    overlay.appendChild(btnContainer);
+
+    // Retrieve list from cache
+    let bases: string[] = [];
+    try {
+      bases = this.cache.json.get('baselevelmanifest') || [];
+    } catch (e) {
+      console.error(e);
+    }
+
+    const createBtn = (text: string, onClick: () => void) => {
+      const btn = document.createElement('button');
+      btn.innerText = text;
+      btn.style.padding = '15px 30px';
+      btn.style.fontSize = '18px';
+      btn.style.cursor = 'pointer';
+      btn.style.backgroundColor = '#444';
+      btn.style.color = 'white';
+      btn.style.border = 'none';
+      btn.style.borderRadius = '5px';
+      btn.onmouseover = () => btn.style.backgroundColor = '#666';
+      btn.onmouseout = () => btn.style.backgroundColor = '#444';
+      btn.onclick = onClick;
+      return btn;
+    };
+
+    bases.forEach(baseFile => {
+      const btn = createBtn(baseFile, async () => {
+        btn.innerText = 'Loading...';
+        btn.disabled = true;
+        try {
+          const res = await fetch('assets/baseleveldata/' + baseFile);
+          if (!res.ok) throw new Error('Failed to fetch');
+          const data = await res.json();
+          overlay.remove();
+          this.scene.start('LevelDesigner', { baseMap: data });
+        } catch (error) {
+          console.error(error);
+          btn.innerText = 'Failed!';
+          setTimeout(() => overlay.remove(), 1000);
+        }
+      });
+      btnContainer.appendChild(btn);
+    });
+
+    const scratchBtn = createBtn('Start from Scratch', () => {
+      overlay.remove();
+      this.scene.start('LevelDesigner');
+    });
+    scratchBtn.style.backgroundColor = '#47aba9';
+    scratchBtn.onmouseout = () => scratchBtn.style.backgroundColor = '#47aba9';
+    scratchBtn.style.marginTop = '20px';
+    btnContainer.appendChild(scratchBtn);
+
+    const cancelBtn = createBtn('Cancel', () => overlay.remove());
+    cancelBtn.style.backgroundColor = '#ff4444';
+    cancelBtn.onmouseout = () => cancelBtn.style.backgroundColor = '#ff4444';
+    btnContainer.appendChild(cancelBtn);
+
+    document.body.appendChild(overlay);
   }
 
   showPopup(msg: string) {
