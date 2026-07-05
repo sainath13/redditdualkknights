@@ -223,6 +223,22 @@ export class Game extends Scene {
       });
     }
 
+    const cliffGroundsLayer = map.getObjectLayer('cliff_grounds');
+    if (cliffGroundsLayer && cliffGroundsLayer.objects) {
+      cliffGroundsLayer.objects.forEach(obj => {
+        const gx = Math.floor((obj.x || 0) / this.cellSize);
+        const gy = Math.floor((obj.y || 0) / this.cellSize);
+        const img = this.add.image(
+          gx * this.cellSize + this.cellSize / 2, 
+          gy * this.cellSize + this.cellSize / 2,
+          obj.name
+        );
+        const scale = this.cellSize / img.width;
+        img.setScale(scale);
+        this.gridContainer.add(img);
+      });
+    }
+
     const obsLayer = map.getObjectLayer('obstacles');
     if (obsLayer && obsLayer.objects) {
       obsLayer.objects.forEach(obj => {
@@ -234,7 +250,7 @@ export class Game extends Scene {
 
     // Render obstacles
     this.obstacles.forEach(obs => {
-      const isFence = obs.type.startsWith('fence_');
+      const isFence = obs.type.startsWith('fence_') || obs.type.startsWith('cliff_');
       const offsetY = isFence ? 0 : -8;
       
       const img = this.add.image(

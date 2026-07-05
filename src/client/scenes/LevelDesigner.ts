@@ -9,7 +9,11 @@ type BrushType = 'water' | 'red_start' | 'blue_start' | 'red_dest' | 'blue_dest'
   | 'obs_bush1' | 'obs_pumpkin1' | 'obs_pumpkin2' | 'obs_rock' | 'enemy_barrel' | 'eraser'
   | 'fence_left_bottom' | 'fence_left_connected_mid_open' | 'fence_left_middle' 
   | 'fence_right_bottom' | 'fence_right_connect_mid_open' | 'fence_right_middle'
-  | 'fence_top_left' | 'fence_top_middle_one' | 'fence_top_middle_two' | 'fence_top_right';
+  | 'fence_top_left' | 'fence_top_middle_one' | 'fence_top_middle_two' | 'fence_top_right'
+  | 'cliff_middle_edge' | 'cliff_right_edge' | 'cliff_left_edge'
+  | 'cliff_ground_bottom_left' | 'cliff_ground_bottom_mid' | 'cliff_ground_bottom_right'
+  | 'cliff_ground_mid_left' | 'cliff_ground_middle' | 'cliff_ground_mid_right'
+  | 'cliff_ground_top_left' | 'cliff_ground_top_mid' | 'cliff_ground_top_right';
 
 interface Pos {
   x: number;
@@ -36,7 +40,13 @@ export class LevelDesigner extends Scene {
   blueDest: Pos | null = null;
 
   obstacles: Obstacle[] = [];
+  obstacleImages: GameObjects.Image[] = [];
+
   enemies: Obstacle[] = [];
+  enemyImages: GameObjects.Image[] = [];
+  
+  cliffGrounds: Obstacle[] = [];
+  cliffGroundImages: GameObjects.Image[] = [];
 
   currentBrush: BrushType = 'tile_middle';
 
@@ -46,8 +56,6 @@ export class LevelDesigner extends Scene {
   publishBtn!: GameObjects.Text;
   
   tileImages: GameObjects.Image[][] = [];
-  obstacleImages: GameObjects.Image[] = [];
-  enemyImages: GameObjects.Image[] = [];
   entitySprites: Record<string, GameObjects.Image | GameObjects.Sprite> = {};
 
   constructor() {
@@ -132,19 +140,23 @@ export class LevelDesigner extends Scene {
     // Create Entity Sprites
     this.entitySprites['red_dest'] = this.add.image(-1000, -1000, 'btn_red');
     this.entitySprites['red_dest'].setDisplaySize(this.cellSize * 0.8, this.cellSize * 0.8);
+    this.entitySprites['red_dest'].setDepth(4);
     this.gridContainer.add(this.entitySprites['red_dest']);
 
     this.entitySprites['blue_dest'] = this.add.image(-1000, -1000, 'btn_blue');
     this.entitySprites['blue_dest'].setDisplaySize(this.cellSize * 0.8, this.cellSize * 0.8);
+    this.entitySprites['blue_dest'].setDepth(4);
     this.gridContainer.add(this.entitySprites['blue_dest']);
 
     this.entitySprites['red_start'] = this.add.sprite(-1000, -1000, 'redknight');
     this.entitySprites['red_start'].setScale((this.cellSize * 0.9) / 94);
+    this.entitySprites['red_start'].setDepth(4);
     this.gridContainer.add(this.entitySprites['red_start']);
 
     this.entitySprites['blue_start'] = this.add.sprite(-1000, -1000, 'blueknight');
     this.entitySprites['blue_start'].setScale((this.cellSize * 0.9) / 94);
     (this.entitySprites['blue_start'] as GameObjects.Sprite).setFlipX(true);
+    this.entitySprites['blue_start'].setDepth(4);
     this.gridContainer.add(this.entitySprites['blue_start']);
 
     this.refreshGrid();
@@ -171,10 +183,15 @@ export class LevelDesigner extends Scene {
         };
         this.mapData[gridY]![gridX] = tileIdMap[this.currentBrush] ?? 11;
         this.refreshGrid();
-      } else if (this.currentBrush.startsWith('obs_') || this.currentBrush.startsWith('fence_')) {
-        // Place obstacle
-        this.obstacles = this.obstacles.filter(o => o.x !== gridX || o.y !== gridY);
-        this.obstacles.push({ type: this.currentBrush, x: gridX, y: gridY });
+      } else if (this.currentBrush.startsWith('obs_') || this.currentBrush.startsWith('fence_') || this.currentBrush.startsWith('cliff_')) {
+        if (this.currentBrush.startsWith('cliff_ground_')) {
+          this.cliffGrounds = this.cliffGrounds.filter(o => o.x !== gridX || o.y !== gridY);
+          this.cliffGrounds.push({ type: this.currentBrush, x: gridX, y: gridY });
+        } else {
+          // Place obstacle
+          this.obstacles = this.obstacles.filter(o => o.x !== gridX || o.y !== gridY);
+          this.obstacles.push({ type: this.currentBrush, x: gridX, y: gridY });
+        }
         this.refreshGrid();
       } else if (this.currentBrush.startsWith('enemy_')) {
         // Place enemy
@@ -182,7 +199,8 @@ export class LevelDesigner extends Scene {
         this.enemies.push({ type: this.currentBrush, x: gridX, y: gridY });
         this.refreshGrid();
       } else if (this.currentBrush === 'eraser') {
-        // Erase entities, obstacles, and enemies
+        // Erase entities, obstacles, enemies, and cliff grounds
+        this.cliffGrounds = this.cliffGrounds.filter(o => o.x !== gridX || o.y !== gridY);
         this.obstacles = this.obstacles.filter(o => o.x !== gridX || o.y !== gridY);
         this.enemies = this.enemies.filter(o => o.x !== gridX || o.y !== gridY);
         if (this.redStart?.x === gridX && this.redStart?.y === gridY) this.redStart = null;
@@ -241,11 +259,27 @@ export class LevelDesigner extends Scene {
     updateEntity('red_start', this.redStart, -8);
     updateEntity('blue_start', this.blueStart, -8);
 
+    // Update cliff grounds (rendered behind obstacles)
+    this.cliffGroundImages.forEach(img => img.destroy());
+    this.cliffGroundImages = [];
+    this.cliffGrounds.forEach(cg => {
+      const img = this.add.image(
+        cg.x * this.cellSize + this.cellSize / 2, 
+        cg.y * this.cellSize + this.cellSize / 2,
+        cg.type
+      );
+      const scale = this.cellSize / img.width;
+      img.setScale(scale);
+      img.setDepth(1);
+      this.gridContainer.add(img);
+      this.cliffGroundImages.push(img);
+    });
+
     // Update obstacles
     this.obstacleImages.forEach(img => img.destroy());
     this.obstacleImages = [];
     this.obstacles.forEach(obs => {
-      const isFence = obs.type.startsWith('fence_');
+      const isFence = obs.type.startsWith('fence_') || obs.type.startsWith('cliff_');
       const offsetY = isFence ? 0 : -8;
       
       const img = this.add.image(
@@ -253,10 +287,10 @@ export class LevelDesigner extends Scene {
         obs.y * this.cellSize + this.cellSize / 2 + offsetY,
         obs.type
       );
-      // Don't squish the aspect ratio, scale relative to cell width
       const scaleRatio = isFence ? 1.0 : 0.9;
       const scale = (this.cellSize * scaleRatio) / img.width;
       img.setScale(scale);
+      img.setDepth(2);
       this.gridContainer.add(img);
       this.obstacleImages.push(img);
     });
@@ -272,16 +306,23 @@ export class LevelDesigner extends Scene {
       );
       const scale = (this.cellSize * 0.9) / img.width;
       img.setScale(scale);
+      img.setDepth(3);
       this.gridContainer.add(img);
       this.enemyImages.push(img);
     });
+
+    // Ensure entities are always drawn on top of newly created obstacles and decorations
+    if (this.entitySprites['red_dest']) this.gridContainer.bringToTop(this.entitySprites['red_dest']);
+    if (this.entitySprites['blue_dest']) this.gridContainer.bringToTop(this.entitySprites['blue_dest']);
+    if (this.entitySprites['red_start']) this.gridContainer.bringToTop(this.entitySprites['red_start']);
+    if (this.entitySprites['blue_start']) this.gridContainer.bringToTop(this.entitySprites['blue_start']);
   }
 
   createPalette() {
-    const bg = this.add.rectangle(0, 0, 320, 650, 0x333333).setOrigin(0.5);
+    const bg = this.add.rectangle(0, 0, 320, 710, 0x333333).setOrigin(0.5);
     this.uiContainer.add(bg);
 
-    this.brushText = this.add.text(0, 270, 'Current Brush:\nGrass (Middle)', { fontSize: '20px', align: 'center' }).setOrigin(0.5);
+    this.brushText = this.add.text(0, 310, 'Current Brush:\nGrass (Middle)', { fontSize: '20px', align: 'center' }).setOrigin(0.5);
     this.uiContainer.add(this.brushText);
 
     const allBrushes: { type: BrushType, label: string, emoji?: string }[] = [
@@ -318,10 +359,26 @@ export class LevelDesigner extends Scene {
       { type: 'fence_top_left', label: 'Fence TL' },
       { type: 'fence_top_middle_one', label: 'Fence TM1' },
       { type: 'fence_top_middle_two', label: 'Fence TM2' },
-      { type: 'fence_top_right', label: 'Fence TR' }
+      { type: 'fence_top_right', label: 'Fence TR' },
+      // Row 10: Cliffs
+      { type: 'cliff_left_edge', label: 'Cliff L' },
+      { type: 'cliff_middle_edge', label: 'Cliff M' },
+      { type: 'cliff_right_edge', label: 'Cliff R' },
+      // Row 11: Cliff Grounds (Top)
+      { type: 'cliff_ground_top_left', label: 'C-Gnd TL' },
+      { type: 'cliff_ground_top_mid', label: 'C-Gnd TM' },
+      { type: 'cliff_ground_top_right', label: 'C-Gnd TR' },
+      // Row 12: Cliff Grounds (Mid)
+      { type: 'cliff_ground_mid_left', label: 'C-Gnd ML' },
+      { type: 'cliff_ground_middle', label: 'C-Gnd M' },
+      { type: 'cliff_ground_mid_right', label: 'C-Gnd MR' },
+      // Row 13: Cliff Grounds (Bot)
+      { type: 'cliff_ground_bottom_left', label: 'C-Gnd BL' },
+      { type: 'cliff_ground_bottom_mid', label: 'C-Gnd BM' },
+      { type: 'cliff_ground_bottom_right', label: 'C-Gnd BR' }
     ];
 
-    const cols = 4;
+    const cols = 5;
     const padding = 60;
     const startX = -((cols - 1) * padding) / 2;
     const startY = -270;
@@ -397,6 +454,15 @@ export class LevelDesigner extends Scene {
       "height": 0
     }));
 
+    const cliffGroundList = this.cliffGrounds.map((cg, i) => ({
+      "id": 300 + i,
+      "name": cg.type,
+      "x": cg.x * this.cellSize,
+      "y": cg.y * this.cellSize,
+      "width": 0,
+      "height": 0
+    }));
+
     const json = {
       "compressionlevel": -1,
       "height": this.gridHeight,
@@ -439,6 +505,13 @@ export class LevelDesigner extends Scene {
           "type": "objectgroup",
           "visible": true,
           "objects": obstaclesList
+        },
+        {
+          "id": 6,
+          "name": "cliff_grounds",
+          "type": "objectgroup",
+          "visible": true,
+          "objects": cliffGroundList
         },
         {
           "id": 5,
@@ -630,7 +703,7 @@ export class LevelDesigner extends Scene {
 
     // Sidebar UI on the left
     this.uiContainer.setPosition(sidebarWidth / 2, height / 2);
-    const uiScale = Math.min(1, height / 700);
+    const uiScale = Math.min(1, height / 750);
     this.uiContainer.setScale(uiScale);
   }
 }

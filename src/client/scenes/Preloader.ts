@@ -70,6 +70,22 @@ export class Preloader extends Scene {
     this.load.image('fence_top_middle_two', 'fence/top_middle_two_fence.png');
     this.load.image('fence_top_right', 'fence/top_right_fence.png');
     
+    // Cliffs
+    this.load.image('cliff_middle_edge', 'cliff/cliff_middle_edge.png');
+    this.load.image('cliff_right_edge', 'cliff/cliff_right_edge.png');
+    this.load.image('cliff_left_edge', 'cliff/clift_left_edge.png');
+    
+    // Cliff Grounds
+    this.load.image('cliff_ground_bottom_left', 'cliff_ground/bottom_left_edge_on_cliff.png');
+    this.load.image('cliff_ground_bottom_mid', 'cliff_ground/bottom_mid_edge_on_cliff.png');
+    this.load.image('cliff_ground_bottom_right', 'cliff_ground/bottom_right_edge_on_cliff.png');
+    this.load.image('cliff_ground_mid_left', 'cliff_ground/mid_left_edge_on_cliff.png');
+    this.load.image('cliff_ground_middle', 'cliff_ground/middle_on_cliff.png');
+    this.load.image('cliff_ground_mid_right', 'cliff_ground/mid_right_edge_on_cliff.png');
+    this.load.image('cliff_ground_top_left', 'cliff_ground/top_left_edge_on_cliff.png');
+    this.load.image('cliff_ground_top_mid', 'cliff_ground/top_middle_edge_on_cliff.png');
+    this.load.image('cliff_ground_top_right', 'cliff_ground/top_right_edge_on_cliff.png');
+    
     // HUD buttons
     this.load.image('btn_close', 'other_buttons/close_button.png');
     this.load.image('btn_close_pressed', 'other_buttons/close_button_pressed.png');
