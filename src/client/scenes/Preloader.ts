@@ -58,6 +58,18 @@ export class Preloader extends Scene {
     // Enemies
     this.load.image('enemy_barrel', 'enemy/singleredbarel.png');
     
+    // Fences
+    this.load.image('fence_left_bottom', 'fence/left_bottom_fence.png');
+    this.load.image('fence_left_connected_mid_open', 'fence/left_connected_mid_open_fence.png');
+    this.load.image('fence_left_middle', 'fence/left_middle_fence.png');
+    this.load.image('fence_right_bottom', 'fence/right_bottom_fence.png');
+    this.load.image('fence_right_connect_mid_open', 'fence/right_connect_mid_open_fence.png');
+    this.load.image('fence_right_middle', 'fence/right_middle_fence.png');
+    this.load.image('fence_top_left', 'fence/top_left_fence.png');
+    this.load.image('fence_top_middle_one', 'fence/top_middle_one_fence.png');
+    this.load.image('fence_top_middle_two', 'fence/top_middle_two_fence.png');
+    this.load.image('fence_top_right', 'fence/top_right_fence.png');
+    
     // HUD buttons
     this.load.image('btn_close', 'other_buttons/close_button.png');
     this.load.image('btn_close_pressed', 'other_buttons/close_button_pressed.png');

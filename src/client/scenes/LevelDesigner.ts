@@ -6,7 +6,10 @@ type BrushType = 'water' | 'red_start' | 'blue_start' | 'red_dest' | 'blue_dest'
   | 'tile_top_left' | 'tile_top_mid' | 'tile_top_right'
   | 'tile_mid_left' | 'tile_middle' | 'tile_mid_right'
   | 'tile_bot_left' | 'tile_bot_mid' | 'tile_bot_right'
-  | 'obs_bush1' | 'obs_pumpkin1' | 'obs_pumpkin2' | 'obs_rock' | 'enemy_barrel' | 'eraser';
+  | 'obs_bush1' | 'obs_pumpkin1' | 'obs_pumpkin2' | 'obs_rock' | 'enemy_barrel' | 'eraser'
+  | 'fence_left_bottom' | 'fence_left_connected_mid_open' | 'fence_left_middle' 
+  | 'fence_right_bottom' | 'fence_right_connect_mid_open' | 'fence_right_middle'
+  | 'fence_top_left' | 'fence_top_middle_one' | 'fence_top_middle_two' | 'fence_top_right';
 
 interface Pos {
   x: number;
@@ -168,7 +171,7 @@ export class LevelDesigner extends Scene {
         };
         this.mapData[gridY]![gridX] = tileIdMap[this.currentBrush] ?? 11;
         this.refreshGrid();
-      } else if (this.currentBrush.startsWith('obs_')) {
+      } else if (this.currentBrush.startsWith('obs_') || this.currentBrush.startsWith('fence_')) {
         // Place obstacle
         this.obstacles = this.obstacles.filter(o => o.x !== gridX || o.y !== gridY);
         this.obstacles.push({ type: this.currentBrush, x: gridX, y: gridY });
@@ -242,13 +245,17 @@ export class LevelDesigner extends Scene {
     this.obstacleImages.forEach(img => img.destroy());
     this.obstacleImages = [];
     this.obstacles.forEach(obs => {
+      const isFence = obs.type.startsWith('fence_');
+      const offsetY = isFence ? 0 : -8;
+      
       const img = this.add.image(
         obs.x * this.cellSize + this.cellSize / 2, 
-        obs.y * this.cellSize + this.cellSize / 2 - 8, // slight vertical offset for 2.5D
+        obs.y * this.cellSize + this.cellSize / 2 + offsetY,
         obs.type
       );
       // Don't squish the aspect ratio, scale relative to cell width
-      const scale = (this.cellSize * 0.9) / img.width;
+      const scaleRatio = isFence ? 1.0 : 0.9;
+      const scale = (this.cellSize * scaleRatio) / img.width;
       img.setScale(scale);
       this.gridContainer.add(img);
       this.obstacleImages.push(img);
@@ -271,38 +278,21 @@ export class LevelDesigner extends Scene {
   }
 
   createPalette() {
-    const bg = this.add.rectangle(0, 0, 1000, 320, 0x333333).setOrigin(0.5);
+    const bg = this.add.rectangle(0, 0, 320, 650, 0x333333).setOrigin(0.5);
     this.uiContainer.add(bg);
 
-    this.brushText = this.add.text(0, -120, 'Current Brush: Grass (Middle)', { fontSize: '24px' }).setOrigin(0.5);
+    this.brushText = this.add.text(0, 270, 'Current Brush:\nGrass (Middle)', { fontSize: '20px', align: 'center' }).setOrigin(0.5);
     this.uiContainer.add(this.brushText);
 
-    // Row 1: Water + Entities + Eraser
-    const topRow: { type: BrushType, label: string, emoji: string }[] = [
+    const allBrushes: { type: BrushType, label: string, emoji?: string }[] = [
+      // Row 1 & 2: Main Tools
       { type: 'water', label: 'Water', emoji: '🟦' },
       { type: 'red_start', label: 'Red Start', emoji: '🔴' },
       { type: 'blue_start', label: 'Blue Start', emoji: '🔵' },
+      { type: 'eraser', label: 'Eraser', emoji: '🧼' },
       { type: 'red_dest', label: 'Red Dest', emoji: '❌' },
       { type: 'blue_dest', label: 'Blue Dest', emoji: '❎' },
-      { type: 'eraser', label: 'Eraser', emoji: '🧼' },
-    ];
-
-    topRow.forEach((brush, index) => {
-      const x = -200 + (index * 80);
-      const btn = this.add.text(x, -65, brush.emoji, {
-        fontSize: '24px',
-        backgroundColor: '#555',
-        padding: { x: 8, y: 8 }
-      }).setOrigin(0.5).setInteractive({ useHandCursor: true })
-        .on('pointerdown', () => {
-          this.currentBrush = brush.type;
-          this.brushText.setText(`Current Brush: ${brush.label}`);
-        });
-      this.uiContainer.add(btn);
-    });
-
-    // Row 2: 9 Ground Tiles
-    const groundRow: { type: BrushType, label: string, emoji: string }[] = [
+      // Row 3, 4, 5: Ground
       { type: 'tile_top_left', label: 'Top Left Edge', emoji: '▛' },
       { type: 'tile_top_mid', label: 'Top Mid Edge', emoji: '▀' },
       { type: 'tile_top_right', label: 'Top Right Edge', emoji: '▜' },
@@ -312,45 +302,61 @@ export class LevelDesigner extends Scene {
       { type: 'tile_bot_left', label: 'Bot Left Edge', emoji: '▙' },
       { type: 'tile_bot_mid', label: 'Bot Mid Edge', emoji: '▄' },
       { type: 'tile_bot_right', label: 'Bot Right Edge', emoji: '▟' },
-    ];
-
-    groundRow.forEach((brush, index) => {
-      const x = -320 + (index * 80);
-      const btn = this.add.text(x, 0, brush.emoji, {
-        fontSize: '24px',
-        backgroundColor: '#555',
-        padding: { x: 8, y: 8 },
-        color: '#8f8'
-      }).setOrigin(0.5).setInteractive({ useHandCursor: true })
-        .on('pointerdown', () => {
-          this.currentBrush = brush.type;
-          this.brushText.setText(`Current Brush: ${brush.label}`);
-        });
-      this.uiContainer.add(btn);
-    });
-
-    // Row 3: Obstacles & Enemies
-    const obsRow: { type: BrushType, label: string, emoji: string }[] = [
+      // Row 6, 7: Obstacles
       { type: 'obs_bush1', label: 'Bush', emoji: '🌳' },
       { type: 'obs_pumpkin1', label: 'Pumpkin 1', emoji: '🎃' },
       { type: 'obs_pumpkin2', label: 'Pumpkin 2', emoji: '🎃' },
       { type: 'obs_rock', label: 'Rock', emoji: '🪨' },
       { type: 'enemy_barrel', label: 'Enemy Barrel', emoji: '🛢️' },
+      // Row 7, 8, 9: Fences
+      { type: 'fence_left_bottom', label: 'Fence LB' },
+      { type: 'fence_left_connected_mid_open', label: 'Fence L Conn' },
+      { type: 'fence_left_middle', label: 'Fence LM' },
+      { type: 'fence_right_bottom', label: 'Fence RB' },
+      { type: 'fence_right_connect_mid_open', label: 'Fence R Conn' },
+      { type: 'fence_right_middle', label: 'Fence RM' },
+      { type: 'fence_top_left', label: 'Fence TL' },
+      { type: 'fence_top_middle_one', label: 'Fence TM1' },
+      { type: 'fence_top_middle_two', label: 'Fence TM2' },
+      { type: 'fence_top_right', label: 'Fence TR' }
     ];
 
-    obsRow.forEach((brush, index) => {
-      const x = -160 + (index * 80);
-      const btn = this.add.text(x, 65, brush.emoji, {
-        fontSize: '24px',
-        backgroundColor: '#555',
-        padding: { x: 8, y: 8 },
-        color: '#ff8'
-      }).setOrigin(0.5).setInteractive({ useHandCursor: true })
-        .on('pointerdown', () => {
+    const cols = 4;
+    const padding = 60;
+    const startX = -((cols - 1) * padding) / 2;
+    const startY = -270;
+
+    allBrushes.forEach((brush, index) => {
+      const col = index % cols;
+      const row = Math.floor(index / cols);
+      
+      const x = startX + (col * padding);
+      const y = startY + (row * padding);
+
+      if (brush.emoji) {
+        const btn = this.add.text(x, y, brush.emoji, {
+          fontSize: '24px',
+          backgroundColor: '#555',
+          padding: { x: 8, y: 8 }
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        
+        btn.on('pointerdown', () => {
           this.currentBrush = brush.type;
-          this.brushText.setText(`Current Brush: ${brush.label}`);
+          this.brushText.setText(`Current Brush:\n${brush.label}`);
         });
-      this.uiContainer.add(btn);
+        this.uiContainer.add(btn);
+      } else {
+        const btnBg = this.add.rectangle(x, y, 48, 48, 0x555555).setInteractive({ useHandCursor: true });
+        const img = this.add.image(x, y, brush.type).setDisplaySize(40, 40);
+        
+        btnBg.on('pointerdown', () => {
+          this.currentBrush = brush.type;
+          this.brushText.setText(`Current Brush:\n${brush.label}`);
+        });
+        img.on('pointerdown', () => btnBg.emit('pointerdown'));
+        
+        this.uiContainer.add([btnBg, img]);
+      }
     });
   }
 
@@ -606,7 +612,11 @@ export class LevelDesigner extends Scene {
     const totalGridWidth = this.gridWidth * this.cellSize;
     const totalGridHeight = this.gridHeight * this.cellSize;
     
-    const scaleFactor = Math.min(width / (totalGridWidth + 40), height / (totalGridHeight + 200), 1);
+    // Left sidebar is ~320px wide. Right side is for the grid.
+    const sidebarWidth = Math.min(320, width * 0.4);
+    const availableGridWidth = width - sidebarWidth;
+    
+    const scaleFactor = Math.min(availableGridWidth / (totalGridWidth + 40), height / (totalGridHeight + 100), 1);
     
     this.gridContainer.setScale(scaleFactor);
     
@@ -614,15 +624,13 @@ export class LevelDesigner extends Scene {
     const scaledGridH = totalGridHeight * scaleFactor;
     
     this.gridContainer.setPosition(
-      (width - scaledGridW) / 2,
-      (height - scaledGridH) / 2 - 120 * scaleFactor // Shift up more for larger palette
+      sidebarWidth + (availableGridWidth - scaledGridW) / 2,
+      (height - scaledGridH) / 2
     );
 
-    // Center UI (palette) near the bottom edge
-    // Since the palette background is 320px tall and centered (origin 0.5), 
-    // it extends 160px down from its center. We position it at height - 170 
-    // so it has a 10px padding from the very bottom of the screen.
-    this.uiContainer.setPosition(width / 2, height - 170);
-    this.uiContainer.setScale(scaleFactor);
+    // Sidebar UI on the left
+    this.uiContainer.setPosition(sidebarWidth / 2, height / 2);
+    const uiScale = Math.min(1, height / 700);
+    this.uiContainer.setScale(uiScale);
   }
 }

@@ -3,6 +3,25 @@
  "infinite":false,
  "layers":[
         {
+         "data":[1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 0, 0, 0, 0, 0, 1,
+            1, 0, 0, 0, 0, 0, 0, 1,
+            1, 0, 0, 0, 0, 0, 0, 1,
+            1, 0, 0, 0, 0, 0, 0, 1,
+            1, 0, 0, 0, 0, 0, 0, 1,
+            1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1],
+         "height":8,
+         "id":3,
+         "name":"water",
+         "opacity":1,
+         "type":"tilelayer",
+         "visible":true,
+         "width":8,
+         "x":0,
+         "y":0
+        }, 
+        {
          "data":[0, 7, 8, 8, 8, 8, 9, 0,
             0, 16, 17, 17, 17, 17, 18, 0,
             0, 16, 17, 17, 17, 17, 18, 0,
@@ -13,7 +32,26 @@
             0, 52, 53, 53, 53, 53, 54, 0],
          "height":8,
          "id":1,
-         "name":"Tile Layer 1",
+         "name":"ground",
+         "opacity":1,
+         "type":"tilelayer",
+         "visible":true,
+         "width":8,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "data":[0, 56, 57, 57, 57, 57, 59, 0,
+            0, 60, 0, 0, 0, 0, 63, 0,
+            0, 60, 0, 0, 0, 0, 63, 0,
+            0, 60, 0, 0, 0, 0, 63, 0,
+            0, 60, 0, 0, 0, 0, 63, 0,
+            0, 60, 0, 0, 0, 0, 63, 0,
+            0, 64, 57, 57, 57, 57, 67, 0,
+            0, 0, 0, 0, 0, 0, 0, 0],
+         "height":8,
+         "id":2,
+         "name":"fense",
          "opacity":1,
          "type":"tilelayer",
          "visible":true,
@@ -21,7 +59,7 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":2,
+ "nextlayerid":4,
  "nextobjectid":1,
  "orientation":"orthogonal",
  "renderorder":"right-down",
@@ -35,6 +73,10 @@
         {
          "firstgid":2,
          "source":"..\/Tilemap_color1.tsx"
+        }, 
+        {
+         "firstgid":56,
+         "source":"..\/Wooden Fence_64x64 tile.tsx"
         }],
  "tilewidth":64,
  "type":"map",

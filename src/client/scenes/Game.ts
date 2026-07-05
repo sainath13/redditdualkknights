@@ -234,12 +234,17 @@ export class Game extends Scene {
 
     // Render obstacles
     this.obstacles.forEach(obs => {
+      const isFence = obs.type.startsWith('fence_');
+      const offsetY = isFence ? 0 : -8;
+      
       const img = this.add.image(
         obs.x * this.cellSize + this.cellSize / 2, 
-        obs.y * this.cellSize + this.cellSize / 2 - 8,
+        obs.y * this.cellSize + this.cellSize / 2 + offsetY,
         obs.type
       );
-      const scale = (this.cellSize * 0.9) / img.width;
+      
+      const scaleRatio = isFence ? 1.0 : 0.9;
+      const scale = (this.cellSize * scaleRatio) / img.width;
       img.setScale(scale);
       this.gridContainer.add(img);
     });
