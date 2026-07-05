@@ -64,7 +64,7 @@ export class LevelDesigner extends Scene {
     super('LevelDesigner');
   }
 
-  init(data?: { baseMap?: any }) {
+  init(data?: { baseMap?: any, gridWidth?: number, gridHeight?: number }) {
     // Clear old state across restarts
     this.mapData = [];
     this.obstacles = [];
@@ -78,6 +78,14 @@ export class LevelDesigner extends Scene {
     this.enemyImages = [];
     this.cliffGroundImages = [];
     this.jsonOutput = null;
+
+    if (data && data.gridWidth && data.gridHeight) {
+      this.gridWidth = data.gridWidth;
+      this.gridHeight = data.gridHeight;
+    } else {
+      this.gridWidth = 6;
+      this.gridHeight = 8;
+    }
 
     if (data && data.baseMap) {
       this.parseBaseMap(data.baseMap);

@@ -173,14 +173,66 @@ export class MainMenu extends Scene {
       btnContainer.appendChild(btn);
     });
 
+    const scratchContainer = document.createElement('div');
+    scratchContainer.style.display = 'flex';
+    scratchContainer.style.flexDirection = 'column';
+    scratchContainer.style.gap = '10px';
+    scratchContainer.style.marginTop = '20px';
+    scratchContainer.style.alignItems = 'center';
+
+    const inputContainer = document.createElement('div');
+    inputContainer.style.display = 'none';
+    inputContainer.style.gap = '10px';
+    inputContainer.style.alignItems = 'center';
+
+    const spanW = document.createElement('span');
+    spanW.innerText = 'W:';
+    spanW.style.color = 'white';
+
+    const widthInput = document.createElement('input');
+    widthInput.type = 'number';
+    widthInput.value = '6';
+    widthInput.style.width = '50px';
+    widthInput.style.padding = '5px';
+
+    const spanH = document.createElement('span');
+    spanH.innerText = 'H:';
+    spanH.style.color = 'white';
+
+    const heightInput = document.createElement('input');
+    heightInput.type = 'number';
+    heightInput.value = '8';
+    heightInput.style.width = '50px';
+    heightInput.style.padding = '5px';
+
     const scratchBtn = createBtn('Start from Scratch', () => {
-      overlay.remove();
-      this.scene.start('LevelDesigner');
+      if (inputContainer.style.display === 'none') {
+        inputContainer.style.display = 'flex';
+        scratchBtn.style.display = 'none';
+      }
     });
     scratchBtn.style.backgroundColor = '#47aba9';
     scratchBtn.onmouseout = () => scratchBtn.style.backgroundColor = '#47aba9';
-    scratchBtn.style.marginTop = '20px';
-    btnContainer.appendChild(scratchBtn);
+    
+    const confirmScratchBtn = createBtn('Go', () => {
+      const w = parseInt(widthInput.value) || 6;
+      const h = parseInt(heightInput.value) || 8;
+      overlay.remove();
+      this.scene.start('LevelDesigner', { gridWidth: w, gridHeight: h });
+    });
+    confirmScratchBtn.style.backgroundColor = '#47aba9';
+    confirmScratchBtn.onmouseout = () => confirmScratchBtn.style.backgroundColor = '#47aba9';
+    confirmScratchBtn.style.padding = '5px 15px';
+
+    inputContainer.appendChild(spanW);
+    inputContainer.appendChild(widthInput);
+    inputContainer.appendChild(spanH);
+    inputContainer.appendChild(heightInput);
+    inputContainer.appendChild(confirmScratchBtn);
+
+    scratchContainer.appendChild(scratchBtn);
+    scratchContainer.appendChild(inputContainer);
+    btnContainer.appendChild(scratchContainer);
 
     const cancelBtn = createBtn('Cancel', () => overlay.remove());
     cancelBtn.style.backgroundColor = '#ff4444';
