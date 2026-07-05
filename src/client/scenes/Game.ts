@@ -32,10 +32,22 @@ export class Game extends Scene {
   // UI
   uiContainer: Phaser.GameObjects.Container;
   controlsContainer!: Phaser.GameObjects.Container;
+  hudContainer!: Phaser.GameObjects.Container;
   gameOver = false;
   selectedKnight: 'red' | 'blue' = 'red';
   selectBtnContainer!: Phaser.GameObjects.Container;
   selectKnightSprite!: Phaser.GameObjects.Sprite;
+  
+  // Zoom & Pan state
+  defaultScale = 1;
+  defaultPos = { x: 0, y: 0 };
+  isDragging = false;
+  dragStartX = 0;
+  dragStartY = 0;
+  gridStartX = 0;
+  gridStartY = 0;
+  initialPinchDistance = 0;
+  initialPinchScale = 1;
 
   constructor() {
     super('Game');
@@ -47,6 +59,7 @@ export class Game extends Scene {
     this.obstacles = [];
     this.enemies = [];
     this.stepCount = 0;
+    this.isDragging = false;
   }
 
   create() {
@@ -56,6 +69,7 @@ export class Game extends Scene {
     this.gridContainer = this.add.container(0, 0);
     this.uiContainer = this.add.container(0, 0);
     this.controlsContainer = this.add.container(0, 0);
+    this.hudContainer = this.add.container(0, 0);
 
     const loadingText = this.add.text(this.scale.width / 2, this.scale.height / 2, 'Loading Map...', {
       fontSize: '24px',
@@ -103,6 +117,83 @@ export class Game extends Scene {
     this.input.keyboard?.on('keydown-DOWN', () => this.move(0, 1));
     this.input.keyboard?.on('keydown-LEFT', () => this.move(-1, 0));
     this.input.keyboard?.on('keydown-RIGHT', () => this.move(1, 0));
+
+    this.setupZoomAndPan();
+  }
+
+  setupZoomAndPan() {
+    this.input.addPointer(1); // Ensure we have enough pointers for multi-touch
+
+    this.input.on('wheel', (_pointer: Phaser.Input.Pointer, _gameObjects: Phaser.GameObjects.GameObject[], _deltaX: number, deltaY: number, _deltaZ: number) => {
+      let newScale = this.gridContainer.scale - (deltaY * 0.001);
+      newScale = Phaser.Math.Clamp(newScale, this.defaultScale * 0.25, this.defaultScale * 4);
+      this.gridContainer.setScale(newScale);
+    });
+
+    // Pointer events for drag (pan) and pinch (zoom)
+    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer, gameObjects: Phaser.GameObjects.GameObject[]) => {
+      if (gameObjects.length > 0) return; // Ignore if clicking UI
+
+      const pointers = this.input.manager.pointers.filter(p => p.isDown);
+      
+      if (pointers.length === 1) {
+        this.isDragging = true;
+        this.dragStartX = pointer.x;
+        this.dragStartY = pointer.y;
+        this.gridStartX = this.gridContainer.x;
+        this.gridStartY = this.gridContainer.y;
+      } else if (pointers.length === 2) {
+        this.isDragging = false;
+        const p1 = pointers[0]!;
+        const p2 = pointers[1]!;
+        this.initialPinchDistance = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y);
+        this.initialPinchScale = this.gridContainer.scale;
+      }
+    });
+
+    this.input.on('pointermove', (_pointer: Phaser.Input.Pointer) => {
+      const pointers = this.input.manager.pointers.filter(p => p.isDown);
+      
+      if (pointers.length === 1 && this.isDragging) {
+        const dx = pointers[0]!.x - this.dragStartX;
+        const dy = pointers[0]!.y - this.dragStartY;
+        this.gridContainer.setPosition(this.gridStartX + dx, this.gridStartY + dy);
+      } else if (pointers.length === 2) {
+        const p1 = pointers[0]!;
+        const p2 = pointers[1]!;
+        const currentDist = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y);
+        const scaleDelta = currentDist / this.initialPinchDistance;
+        let newScale = this.initialPinchScale * scaleDelta;
+        newScale = Phaser.Math.Clamp(newScale, this.defaultScale * 0.25, this.defaultScale * 4);
+        this.gridContainer.setScale(newScale);
+      }
+    });
+
+    this.input.on('pointerup', () => {
+      const pointers = this.input.manager.pointers.filter(p => p.isDown);
+      if (pointers.length === 0) {
+        this.isDragging = false;
+      } else if (pointers.length === 1) {
+        this.isDragging = true;
+        const p = pointers[0]!;
+        this.dragStartX = p.x;
+        this.dragStartY = p.y;
+        this.gridStartX = this.gridContainer.x;
+        this.gridStartY = this.gridContainer.y;
+      }
+    });
+  }
+
+  resetView() {
+    this.tweens.add({
+      targets: this.gridContainer,
+      x: this.defaultPos.x,
+      y: this.defaultPos.y,
+      scaleX: this.defaultScale,
+      scaleY: this.defaultScale,
+      duration: 300,
+      ease: 'Power2'
+    });
   }
 
   createGrid(mapKey: string) {
@@ -271,12 +362,33 @@ export class Game extends Scene {
     createBtn(0, -55, 'arrow_up', 0, -1);
     createBtn(0, 55, 'arrow_down', 0, 1);
     
-    // HUD Buttons on the right side of D-Pad
-    const hudX = 140; // 140px to the right of the D-Pad center
+    // HUD Buttons on the right side of screen (hudContainer)
+    // 2x2 Grid Layout
     const btnScale = 45;
+    const offset = 30;
 
-    // Replay Button (Top)
-    const replayBtn = this.add.image(hudX, -50, 'btn_replay').setOrigin(0.5).setInteractive({ useHandCursor: true });
+    // Relocate Button (Top Left)
+    const resetBtn = this.add.text(-offset, -offset, '🎯', {
+      fontSize: '36px',
+      backgroundColor: '#555',
+      padding: { x: 5, y: 5 }
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    resetBtn.on('pointerdown', () => {
+      this.resetView();
+    });
+
+    // Step Count (Top Right)
+    const stepsBg = this.add.image(offset, -offset, 'btn_steps').setOrigin(0.5);
+    stepsBg.setDisplaySize(btnScale, btnScale);
+    this.stepText = this.add.text(offset, -offset, '0', {
+      fontFamily: 'Arial',
+      fontSize: '24px',
+      color: '#333333',
+      fontStyle: 'bold'
+    }).setOrigin(0.5);
+
+    // Replay Button (Bottom Left)
+    const replayBtn = this.add.image(-offset, offset, 'btn_replay').setOrigin(0.5).setInteractive({ useHandCursor: true });
     replayBtn.setDisplaySize(btnScale, btnScale);
     replayBtn.on('pointerdown', () => {
       replayBtn.setTexture('btn_replay_pressed');
@@ -285,18 +397,8 @@ export class Game extends Scene {
     replayBtn.on('pointerup', () => replayBtn.setTexture('btn_replay'));
     replayBtn.on('pointerout', () => replayBtn.setTexture('btn_replay'));
 
-    // Step Count (Middle)
-    const stepsBg = this.add.image(hudX, 0, 'btn_steps').setOrigin(0.5);
-    stepsBg.setDisplaySize(btnScale, btnScale);
-    this.stepText = this.add.text(hudX, 0, '0', {
-      fontFamily: 'Arial',
-      fontSize: '24px',
-      color: '#333333',
-      fontStyle: 'bold'
-    }).setOrigin(0.5);
-
-    // Menu / Close Button (Bottom)
-    const closeBtn = this.add.image(hudX, 50, 'btn_close').setOrigin(0.5).setInteractive({ useHandCursor: true });
+    // Menu / Close Button (Bottom Right)
+    const closeBtn = this.add.image(offset, offset, 'btn_close').setOrigin(0.5).setInteractive({ useHandCursor: true });
     closeBtn.setDisplaySize(btnScale, btnScale);
     closeBtn.on('pointerdown', () => {
       closeBtn.setTexture('btn_close_pressed');
@@ -305,7 +407,7 @@ export class Game extends Scene {
     closeBtn.on('pointerup', () => closeBtn.setTexture('btn_close'));
     closeBtn.on('pointerout', () => closeBtn.setTexture('btn_close'));
 
-    this.controlsContainer.add([replayBtn, stepsBg, this.stepText, closeBtn]);
+    this.hudContainer.add([replayBtn, resetBtn, stepsBg, this.stepText, closeBtn]);
   }
 
   updateLayout(width: number, height: number) {
@@ -315,19 +417,21 @@ export class Game extends Scene {
     const totalGridWidth = 6 * this.cellSize;
     const totalGridHeight = 8 * this.cellSize;
     
-    // Calculate base scale to fit screen, then multiply by 1.2x as requested
+    // Calculate base scale to fit screen, then multiply by 1.1x as requested
     let scaleFactor = Math.min(width / (totalGridWidth + 40), height / (totalGridHeight + 200), 1);
     scaleFactor *= 1.1;
     
-    this.gridContainer.setScale(scaleFactor);
+    this.defaultScale = scaleFactor;
+    this.defaultPos = {
+      x: (width - totalGridWidth * scaleFactor) / 2,
+      y: (height - totalGridHeight * scaleFactor) / 2 - 50 * scaleFactor // Shift up slightly for controls
+    };
     
-    const scaledGridW = totalGridWidth * scaleFactor;
-    const scaledGridH = totalGridHeight * scaleFactor;
-    
-    this.gridContainer.setPosition(
-      (width - scaledGridW) / 2,
-      (height - scaledGridH) / 2 - 50 * scaleFactor // Shift up slightly for controls
-    );
+    // Only update position/scale if not already dragging/zooming, or if this is the first layout pass
+    if (!this.isDragging) {
+      this.gridContainer.setScale(this.defaultScale);
+      this.gridContainer.setPosition(this.defaultPos.x, this.defaultPos.y);
+    }
 
     // Position HUD (Menu/Steps) at top-left
     this.uiContainer.setPosition(0, 0);
@@ -336,6 +440,10 @@ export class Game extends Scene {
     // Position Controls (D-pad) at bottom-left
     this.controlsContainer.setPosition(85 * scaleFactor, height - 100 * scaleFactor);
     this.controlsContainer.setScale(scaleFactor);
+    
+    // Position HUD (Replay, Steps, Menu) at bottom-right
+    this.hudContainer.setPosition(width - 85 * scaleFactor, height - 100 * scaleFactor);
+    this.hudContainer.setScale(scaleFactor);
   }
 
   move(dx: number, dy: number) {

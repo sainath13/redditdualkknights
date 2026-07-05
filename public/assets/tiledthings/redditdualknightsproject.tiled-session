@@ -108,7 +108,7 @@
     "map.lastUsedFormat": "json",
     "map.tileHeight": 64,
     "map.tileWidth": 64,
-    "map.width": 6,
+    "map.width": 8,
     "openFiles": [
     ],
     "project": "redditdualknightsproject.tiled-project",
