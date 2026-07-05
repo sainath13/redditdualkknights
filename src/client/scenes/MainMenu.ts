@@ -4,8 +4,8 @@ export class MainMenu extends Scene {
   background: GameObjects.Image | null = null;
   logo: GameObjects.Image | null = null;
   title: GameObjects.Text | null = null;
-  playBtn: GameObjects.Text | null = null;
-  designerBtn: GameObjects.Text | null = null;
+  playBtn: GameObjects.Container | null = null;
+  designerBtn: GameObjects.Container | null = null;
 
   constructor() {
     super('MainMenu');
@@ -47,8 +47,14 @@ export class MainMenu extends Scene {
     }
     this.background!.setDisplaySize(width, height);
 
-    // Logo – keep aspect but scale down for very small screens
-    const scaleFactor = Math.min(width / 1024, height / 768);
+    // Better responsive scaling: keep aspect but ensure it doesn't shrink to microscopic sizes on phones
+    let scaleFactor = Math.min(width / 1024, height / 768);
+    
+    // If on a portrait screen or narrow phone, scale based on a narrower reference width 
+    // so the UI remains large and readable.
+    if (width < 800) {
+      scaleFactor = width / 450; 
+    }
 
     if (!this.logo) {
       this.logo = this.add.image(0, 0, 'logo');
@@ -74,30 +80,68 @@ export class MainMenu extends Scene {
 
     // Play Button
     if (!this.playBtn) {
-      this.playBtn = this.add.text(0, 0, 'Play Game', {
-        fontSize: '32px',
-        backgroundColor: '#444',
-        padding: { x: 20, y: 10 }
-      }).setOrigin(0.5).setInteractive({ useHandCursor: true })
-        .on('pointerdown', () => this.scene.start('Game'));
+      this.playBtn = this.add.container(0, 0);
+      
+      const img = this.add.image(0, 0, 'menu_btn').setInteractive({ useHandCursor: true });
+      const txt = this.add.text(0, -4, 'Play Game', {
+        fontFamily: 'Arial Black',
+        fontSize: '28px',
+        color: '#ffffff',
+        stroke: '#000000',
+        strokeThickness: 4
+      }).setOrigin(0.5);
+
+      img.on('pointerdown', () => {
+        img.setTexture('menu_btn_pressed');
+        txt.setY(0); // push text down when pressed
+      });
+      img.on('pointerup', () => {
+        img.setTexture('menu_btn');
+        txt.setY(-4);
+        this.scene.start('Game');
+      });
+      img.on('pointerout', () => {
+        img.setTexture('menu_btn');
+        txt.setY(-4);
+      });
+
+      this.playBtn.add([img, txt]);
     }
-    this.playBtn!.setPosition(width / 2, height * 0.75);
+    this.playBtn!.setPosition(width / 2, height * 0.72);
     this.playBtn!.setScale(scaleFactor);
 
     // Designer Button
     if (!this.designerBtn) {
-      this.designerBtn = this.add.text(0, 0, 'Level Designer', {
-        fontSize: '32px',
-        backgroundColor: '#444',
-        padding: { x: 20, y: 10 }
-      }).setOrigin(0.5).setInteractive({ useHandCursor: true })
-        .on('pointerdown', () => {
-          if (this.sys.game.device.os.desktop) {
-            this.showBaseSelectionPopup();
-          } else {
-            this.showPopup("The Level Designer is\nonly available on Desktop.");
-          }
-        });
+      this.designerBtn = this.add.container(0, 0);
+      
+      const img = this.add.image(0, 0, 'menu_btn').setInteractive({ useHandCursor: true });
+      const txt = this.add.text(0, -4, 'Level Designer', {
+        fontFamily: 'Arial Black',
+        fontSize: '24px',
+        color: '#ffffff',
+        stroke: '#000000',
+        strokeThickness: 4
+      }).setOrigin(0.5);
+
+      img.on('pointerdown', () => {
+        img.setTexture('menu_btn_pressed');
+        txt.setY(0);
+      });
+      img.on('pointerup', () => {
+        img.setTexture('menu_btn');
+        txt.setY(-4);
+        if (this.sys.game.device.os.desktop) {
+          this.showBaseSelectionPopup();
+        } else {
+          this.showPopup("The Level Designer is\nonly available on Desktop.");
+        }
+      });
+      img.on('pointerout', () => {
+        img.setTexture('menu_btn');
+        txt.setY(-4);
+      });
+
+      this.designerBtn.add([img, txt]);
     }
     this.designerBtn!.setPosition(width / 2, height * 0.85);
     this.designerBtn!.setScale(scaleFactor);
