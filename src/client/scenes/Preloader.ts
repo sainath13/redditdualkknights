@@ -57,6 +57,25 @@ export class Preloader extends Scene {
     this.load.image('obs_rock', 'obstacles/rock.png');
     // Enemies
     this.load.image('enemy_barrel', 'enemy/singleredbarel.png');
+    
+    // HUD buttons
+    this.load.image('btn_close', 'other_buttons/close_button.png');
+    this.load.image('btn_close_pressed', 'other_buttons/close_button_pressed.png');
+    this.load.image('btn_steps', 'other_buttons/steps_button.png');
+    this.load.image('btn_steps_pressed', 'other_buttons/steps_button_pressed.png');
+    this.load.image('btn_replay', 'other_buttons/replay_button.png');
+    this.load.image('btn_replay_pressed', 'other_buttons/replay_button_pressed.png');
+    
+    // Arrow buttons
+    this.load.image('arrow_up', 'arrow_buttons/up_button.png');
+    this.load.image('arrow_up_pressed', 'arrow_buttons/up_button_pressed.png');
+    this.load.image('arrow_down', 'arrow_buttons/down_button.png');
+    this.load.image('arrow_down_pressed', 'arrow_buttons/down_button_pressed.png');
+    this.load.image('arrow_left', 'arrow_buttons/left_button.png');
+    this.load.image('arrow_left_pressed', 'arrow_buttons/left_button_pressed.png');
+    this.load.image('arrow_right', 'arrow_buttons/right_button.png');
+    this.load.image('arrow_right_pressed', 'arrow_buttons/right_button_pressed.png');
+    
     // Map data
     this.load.tilemapTiledJSON('baselevelnine', 'tiledthings/levels/baselevelnine.json');
 

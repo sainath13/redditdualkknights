@@ -31,9 +31,11 @@ export class Game extends Scene {
   
   // UI
   uiContainer: Phaser.GameObjects.Container;
+  controlsContainer!: Phaser.GameObjects.Container;
   gameOver = false;
   selectedKnight: 'red' | 'blue' = 'red';
-  selectBtnText: Phaser.GameObjects.Text;
+  selectBtnContainer!: Phaser.GameObjects.Container;
+  selectKnightSprite!: Phaser.GameObjects.Sprite;
 
   constructor() {
     super('Game');
@@ -53,6 +55,7 @@ export class Game extends Scene {
 
     this.gridContainer = this.add.container(0, 0);
     this.uiContainer = this.add.container(0, 0);
+    this.controlsContainer = this.add.container(0, 0);
 
     const loadingText = this.add.text(this.scale.width / 2, this.scale.height / 2, 'Loading Map...', {
       fontSize: '24px',
@@ -79,7 +82,6 @@ export class Game extends Scene {
         this.createGrid(mapKey);
         this.createKnights();
         this.createControls();
-        this.createUI();
 
         this.updateLayout(this.scale.width, this.scale.height);
       })
@@ -89,7 +91,6 @@ export class Game extends Scene {
         this.createGrid('baselevelnine');
         this.createKnights();
         this.createControls();
-        this.createUI();
         this.updateLayout(this.scale.width, this.scale.height);
       });
 
@@ -225,36 +226,86 @@ export class Game extends Scene {
   }
 
   createControls() {
-    const createBtn = (x: number, y: number, label: string, dx: number, dy: number) => {
-      const btn = this.add.text(x, y, label, {
-        fontSize: '36px',
-        backgroundColor: '#444',
-        padding: { x: 8, y: 8 }
-      }).setOrigin(0.5)
-        .setInteractive({ useHandCursor: true })
-        .on('pointerdown', () => this.move(dx, dy));
-      this.uiContainer.add(btn);
+    const createBtn = (x: number, y: number, textureKey: string, dx: number, dy: number) => {
+      const btn = this.add.image(x, y, textureKey).setOrigin(0.5).setInteractive({ useHandCursor: true });
+      btn.setDisplaySize(45, 45);
+
+      btn.on('pointerdown', () => {
+        btn.setTexture(`${textureKey}_pressed`);
+        this.move(dx, dy);
+      });
+      btn.on('pointerup', () => btn.setTexture(textureKey));
+      btn.on('pointerout', () => btn.setTexture(textureKey));
+
+      this.controlsContainer.add(btn);
     };
 
-    // Arrange buttons in a single horizontal line at the bottom
-    createBtn(-150, 0, '⬅️', -1, 0);
-    createBtn(-75, 0, '⬇️', 0, 1);
+    // Toggle button in the center (0, 0)
+    this.selectBtnContainer = this.add.container(0, 0);
     
-    // Toggle button in the center
-    this.selectBtnText = this.add.text(0, 0, '🔴', {
-      fontSize: '36px',
-      backgroundColor: '#444',
-      padding: { x: 8, y: 8 }
-    }).setOrigin(0.5)
-      .setInteractive({ useHandCursor: true })
+    this.selectKnightSprite = this.add.sprite(0, -5, 'redknight'); // -5 to center visually
+    this.selectKnightSprite.play('red_idle');
+    const scale = 45 / 94; // scale to fit roughly the new 45x45 size
+    this.selectKnightSprite.setScale(scale);
+    
+    this.selectBtnContainer.add([this.selectKnightSprite]);
+    
+    this.selectKnightSprite.setInteractive({ useHandCursor: true })
       .on('pointerdown', () => {
         this.selectedKnight = this.selectedKnight === 'red' ? 'blue' : 'red';
-        this.selectBtnText.setText(this.selectedKnight === 'red' ? '🔴' : '🔵');
+        this.selectKnightSprite.setTexture(`${this.selectedKnight}knight`);
+        this.selectKnightSprite.play(`${this.selectedKnight}_idle`);
+        if (this.selectedKnight === 'blue') {
+          this.selectKnightSprite.setFlipX(true);
+        } else {
+          this.selectKnightSprite.setFlipX(false);
+        }
       });
-    this.uiContainer.add(this.selectBtnText);
+      
+    this.controlsContainer.add(this.selectBtnContainer);
 
-    createBtn(75, 0, '⬆️', 0, -1);
-    createBtn(150, 0, '➡️', 1, 0);
+    // Arrange buttons in a circle around the center (0,0)
+    // Distance from center = 55px
+    createBtn(-55, 0, 'arrow_left', -1, 0);
+    createBtn(55, 0, 'arrow_right', 1, 0);
+    createBtn(0, -55, 'arrow_up', 0, -1);
+    createBtn(0, 55, 'arrow_down', 0, 1);
+    
+    // HUD Buttons on the right side of D-Pad
+    const hudX = 140; // 140px to the right of the D-Pad center
+    const btnScale = 45;
+
+    // Replay Button (Top)
+    const replayBtn = this.add.image(hudX, -50, 'btn_replay').setOrigin(0.5).setInteractive({ useHandCursor: true });
+    replayBtn.setDisplaySize(btnScale, btnScale);
+    replayBtn.on('pointerdown', () => {
+      replayBtn.setTexture('btn_replay_pressed');
+      this.scene.restart();
+    });
+    replayBtn.on('pointerup', () => replayBtn.setTexture('btn_replay'));
+    replayBtn.on('pointerout', () => replayBtn.setTexture('btn_replay'));
+
+    // Step Count (Middle)
+    const stepsBg = this.add.image(hudX, 0, 'btn_steps').setOrigin(0.5);
+    stepsBg.setDisplaySize(btnScale, btnScale);
+    this.stepText = this.add.text(hudX, 0, '0', {
+      fontFamily: 'Arial',
+      fontSize: '24px',
+      color: '#333333',
+      fontStyle: 'bold'
+    }).setOrigin(0.5);
+
+    // Menu / Close Button (Bottom)
+    const closeBtn = this.add.image(hudX, 50, 'btn_close').setOrigin(0.5).setInteractive({ useHandCursor: true });
+    closeBtn.setDisplaySize(btnScale, btnScale);
+    closeBtn.on('pointerdown', () => {
+      closeBtn.setTexture('btn_close_pressed');
+      this.scene.start('MainMenu');
+    });
+    closeBtn.on('pointerup', () => closeBtn.setTexture('btn_close'));
+    closeBtn.on('pointerout', () => closeBtn.setTexture('btn_close'));
+
+    this.controlsContainer.add([replayBtn, stepsBg, this.stepText, closeBtn]);
   }
 
   updateLayout(width: number, height: number) {
@@ -278,9 +329,13 @@ export class Game extends Scene {
       (height - scaledGridH) / 2 - 50 * scaleFactor // Shift up slightly for controls
     );
 
-    // Center UI (controls) near the bottom edge
-    this.uiContainer.setPosition(width / 2, height - 60);
+    // Position HUD (Menu/Steps) at top-left
+    this.uiContainer.setPosition(0, 0);
     this.uiContainer.setScale(scaleFactor);
+    
+    // Position Controls (D-pad) at bottom-left
+    this.controlsContainer.setPosition(85 * scaleFactor, height - 100 * scaleFactor);
+    this.controlsContainer.setScale(scaleFactor);
   }
 
   move(dx: number, dy: number) {
@@ -288,7 +343,7 @@ export class Game extends Scene {
 
     // Increment step count on any move attempt
     this.stepCount++;
-    this.stepText.setText(`Steps: ${this.stepCount}`);
+    this.stepText.setText(`${this.stepCount}`);
 
     // If blue is selected, invert the movement inputs so the arrows control Blue directly.
     if (this.selectedKnight === 'blue') {
@@ -474,27 +529,7 @@ export class Game extends Scene {
     popup.add(okBtn);
   }
 
-  createUI() {
-    const margin = 20;
 
-    // Back to Menu
-    const backBtn = this.add.text(margin, margin, '⬅ Menu', {
-      fontSize: '20px',
-      backgroundColor: '#555',
-      padding: { x: 10, y: 10 }
-    }).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => this.scene.start('MainMenu'));
-
-    // Step Count UI
-    this.stepText = this.add.text(margin, margin + 70, 'Steps: 0', {
-      fontSize: '24px',
-      color: '#ffffff',
-      backgroundColor: '#222',
-      padding: { x: 10, y: 10 }
-    });
-
-    this.uiContainer.add([backBtn, this.stepText]);
-  }
 
   showPopup(msg: string) {
     // A simple text popup
