@@ -586,8 +586,8 @@ export class Game extends Scene {
   async showLeaderboardPopup() {
     const popup = this.add.container(this.scale.width / 2, this.scale.height / 2);
     
-    const bg = this.add.rectangle(0, 0, 500, 400, 0x000000, 0.9);
-    bg.setStrokeStyle(4, 0xffffff);
+    const bg = this.add.image(0, 0, 'popup_bg');
+    bg.setDisplaySize(500, 400);
     
     const title = this.add.text(0, -160, 'Level Complete!', {
       fontFamily: 'Arial',
@@ -607,7 +607,10 @@ export class Game extends Scene {
 
     popup.add([bg, title, scoreText, loadingText]);
 
-    const scaleFactor = Math.min(this.scale.width / 1024, this.scale.height / 768, 1);
+    let scaleFactor = Math.min(this.scale.width / 1024, this.scale.height / 768, 1.2);
+    if (this.scale.width < 800) {
+      scaleFactor = this.scale.width / 550; // Keeps 500px popup inside the screen width safely
+    }
     popup.setScale(scaleFactor);
 
     try {
@@ -647,15 +650,33 @@ export class Game extends Scene {
       console.error(e);
     }
 
-    const okBtn = this.add.text(0, 150, 'Retry', {
-      fontSize: '24px',
-      backgroundColor: '#555',
-      padding: { x: 30, y: 10 }
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => {
-        this.scene.restart();
-      });
+    const okBtn = this.add.container(0, 150);
+    const okImg = this.add.image(0, 0, 'menu_btn').setInteractive({ useHandCursor: true });
+    okImg.setDisplaySize(140, 50);
+    
+    const okText = this.add.text(0, -4, 'Retry', {
+      fontFamily: 'Arial Black',
+      fontSize: '20px',
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 4
+    }).setOrigin(0.5);
 
+    okImg.on('pointerdown', () => {
+      okImg.setTexture('menu_btn_pressed');
+      okText.setY(0);
+    });
+    okImg.on('pointerup', () => {
+      okImg.setTexture('menu_btn');
+      okText.setY(-4);
+      this.scene.restart();
+    });
+    okImg.on('pointerout', () => {
+      okImg.setTexture('menu_btn');
+      okText.setY(-4);
+    });
+
+    okBtn.add([okImg, okText]);
     popup.add(okBtn);
   }
 
@@ -665,8 +686,8 @@ export class Game extends Scene {
     // A simple text popup
     const popup = this.add.container(this.scale.width / 2, this.scale.height / 2);
     
-    const bg = this.add.rectangle(0, 0, 400, 200, 0x000000, 0.8);
-    bg.setStrokeStyle(4, 0xffffff);
+    const bg = this.add.image(0, 0, 'popup_bg');
+    bg.setDisplaySize(400, 240);
     
     const text = this.add.text(0, 0, msg, {
       fontFamily: 'Arial Black',
@@ -676,19 +697,40 @@ export class Game extends Scene {
     }).setOrigin(0.5);
 
     // Add a retry button
-    const retryBtn = this.add.text(0, 60, 'Retry', {
-      fontSize: '24px',
-      backgroundColor: '#555',
-      padding: { x: 20, y: 10 }
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => {
-        this.scene.restart();
-      });
+    const retryBtn = this.add.container(0, 60);
+    const retryImg = this.add.image(0, 0, 'menu_btn').setInteractive({ useHandCursor: true });
+    retryImg.setDisplaySize(140, 50);
+    
+    const retryText = this.add.text(0, -4, 'Retry', {
+      fontFamily: 'Arial Black',
+      fontSize: '20px',
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 4
+    }).setOrigin(0.5);
 
+    retryImg.on('pointerdown', () => {
+      retryImg.setTexture('menu_btn_pressed');
+      retryText.setY(0);
+    });
+    retryImg.on('pointerup', () => {
+      retryImg.setTexture('menu_btn');
+      retryText.setY(-4);
+      this.scene.restart();
+    });
+    retryImg.on('pointerout', () => {
+      retryImg.setTexture('menu_btn');
+      retryText.setY(-4);
+    });
+
+    retryBtn.add([retryImg, retryText]);
     popup.add([bg, text, retryBtn]);
     
     // Scale popup with game size
-    const scaleFactor = Math.min(this.scale.width / 1024, this.scale.height / 768, 1);
+    let scaleFactor = Math.min(this.scale.width / 1024, this.scale.height / 768, 1.5);
+    if (this.scale.width < 800) {
+      scaleFactor = this.scale.width / 450; // Keeps 400px popup inside the screen width safely
+    }
     popup.setScale(scaleFactor);
   }
 }

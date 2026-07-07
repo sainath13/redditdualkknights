@@ -5,9 +5,9 @@
     },
     "activeFile": "levels/baselevelten.tmj",
     "expandedProjectPaths": [
+        ".",
         "tilesets",
-        "levels",
-        "."
+        "levels"
     ],
     "fileStates": {
         "Tilemap_color1.tsx": {
@@ -96,8 +96,8 @@
             "scale": 1.07,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 256.07476635514024,
-                "y": 255.607476635514
+                "x": 257.0093457943926,
+                "y": 269.1588785046729
             }
         },
         "levels/baseleveltwo.json": {

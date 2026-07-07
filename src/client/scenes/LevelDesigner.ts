@@ -53,7 +53,7 @@ export class LevelDesigner extends Scene {
   gridContainer!: GameObjects.Container;
   uiContainer!: GameObjects.Container;
   brushText!: GameObjects.Text;
-  publishBtn!: GameObjects.Text;
+  publishBtn!: GameObjects.Container;
   
   jsonOutput: HTMLTextAreaElement | null = null;
   
@@ -178,20 +178,32 @@ export class LevelDesigner extends Scene {
     this.createPalette();
     
     // Add Back Button
-    this.add.text(20, 20, '⬅ Back', {
-      fontSize: '24px',
-      backgroundColor: '#444',
-      padding: { x: 10, y: 10 }
-    }).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => this.scene.start('MainMenu'));
+    const backBtn = this.add.container(20, 20);
+    const backImg = this.add.image(0, 0, 'menu_btn').setOrigin(0, 0).setInteractive({ useHandCursor: true });
+    backImg.setDisplaySize(140, 50);
+    const backText = this.add.text(70, 25, '⬅ Back', {
+      fontFamily: 'Arial Black', fontSize: '18px', color: '#ffffff', stroke: '#000000', strokeThickness: 4
+    }).setOrigin(0.5);
+    
+    backImg.on('pointerdown', () => { backImg.setTexture('menu_btn_pressed'); backText.setY(29); });
+    backImg.on('pointerup', () => { backImg.setTexture('menu_btn'); backText.setY(25); this.scene.start('MainMenu'); });
+    backImg.on('pointerout', () => { backImg.setTexture('menu_btn'); backText.setY(25); });
+    
+    backBtn.add([backImg, backText]);
 
     // Publish button
-    this.publishBtn = this.add.text(this.scale.width - 20, 20, 'Publish to Reddit', {
-      fontSize: '24px',
-      backgroundColor: '#47aba9',
-      padding: { x: 20, y: 10 }
-    }).setOrigin(1, 0).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => this.showPublishPrompt(this.generateMapJSON()));
+    this.publishBtn = this.add.container(this.scale.width - 20, 20);
+    const pubImg = this.add.image(0, 0, 'menu_btn').setOrigin(1, 0).setInteractive({ useHandCursor: true });
+    pubImg.setDisplaySize(240, 50);
+    const pubText = this.add.text(-120, 25, 'Publish to Reddit', {
+      fontFamily: 'Arial Black', fontSize: '18px', color: '#ffffff', stroke: '#000000', strokeThickness: 4
+    }).setOrigin(0.5);
+
+    pubImg.on('pointerdown', () => { pubImg.setTexture('menu_btn_pressed'); pubText.setY(29); });
+    pubImg.on('pointerup', () => { pubImg.setTexture('menu_btn'); pubText.setY(25); this.showPublishPrompt(this.generateMapJSON()); });
+    pubImg.on('pointerout', () => { pubImg.setTexture('menu_btn'); pubText.setY(25); });
+
+    this.publishBtn.add([pubImg, pubText]);
       
     // Visible JSON Output Area for manual copying
     this.jsonOutput = document.createElement('textarea');

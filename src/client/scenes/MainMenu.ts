@@ -3,7 +3,6 @@ import { Scene, GameObjects } from 'phaser';
 export class MainMenu extends Scene {
   background: GameObjects.Image | null = null;
   logo: GameObjects.Image | null = null;
-  title: GameObjects.Text | null = null;
   playBtn: GameObjects.Container | null = null;
   designerBtn: GameObjects.Container | null = null;
 
@@ -19,7 +18,6 @@ export class MainMenu extends Scene {
   init(): void {
     this.background = null;
     this.logo = null;
-    this.title = null;
     this.playBtn = null;
     this.designerBtn = null;
   }
@@ -61,28 +59,12 @@ export class MainMenu extends Scene {
     }
     this.logo!.setPosition(width / 2, height * 0.38).setScale(scaleFactor);
 
-    // Title text – create once, then scale on resize
-    const baseFontSize = 38;
-    if (!this.title) {
-      this.title = this.add
-        .text(0, 0, 'Main Menu', {
-          fontFamily: 'Arial Black',
-          fontSize: `${baseFontSize}px`,
-          color: '#ffffff',
-          stroke: '#000000',
-          strokeThickness: 8,
-          align: 'center',
-        })
-        .setOrigin(0.5);
-    }
-    this.title!.setPosition(width / 2, height * 0.6);
-    this.title!.setScale(scaleFactor);
-
     // Play Button
     if (!this.playBtn) {
       this.playBtn = this.add.container(0, 0);
       
       const img = this.add.image(0, 0, 'menu_btn').setInteractive({ useHandCursor: true });
+      img.setDisplaySize(240, 65);
       const txt = this.add.text(0, -4, 'Play Game', {
         fontFamily: 'Arial Black',
         fontSize: '28px',
@@ -115,6 +97,7 @@ export class MainMenu extends Scene {
       this.designerBtn = this.add.container(0, 0);
       
       const img = this.add.image(0, 0, 'menu_btn').setInteractive({ useHandCursor: true });
+      img.setDisplaySize(260, 65);
       const txt = this.add.text(0, -4, 'Level Designer', {
         fontFamily: 'Arial Black',
         fontSize: '24px',
@@ -187,13 +170,24 @@ export class MainMenu extends Scene {
       btn.innerText = text;
       btn.style.padding = '15px 30px';
       btn.style.fontSize = '18px';
+      btn.style.fontFamily = 'Arial Black';
       btn.style.cursor = 'pointer';
-      btn.style.backgroundColor = '#444';
       btn.style.color = 'white';
       btn.style.border = 'none';
-      btn.style.borderRadius = '5px';
-      btn.onmouseover = () => btn.style.backgroundColor = '#666';
-      btn.onmouseout = () => btn.style.backgroundColor = '#444';
+      btn.style.background = 'url("assets/woodentable/bigBlueButtonUnpressed.png") center/100% 100% no-repeat';
+      btn.style.textShadow = '-2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000';
+      btn.style.minWidth = '200px'; // Give it some width
+      btn.style.backgroundColor = 'transparent'; // prevent default background
+      
+      btn.onmouseout = () => {
+         btn.style.background = 'url("assets/woodentable/bigBlueButtonUnpressed.png") center/100% 100% no-repeat';
+      };
+      btn.onmousedown = () => {
+         btn.style.background = 'url("assets/woodentable/bluebuttonPressed.png") center/100% 100% no-repeat';
+      };
+      btn.onmouseup = () => {
+         btn.style.background = 'url("assets/woodentable/bigBlueButtonUnpressed.png") center/100% 100% no-repeat';
+      };
       btn.onclick = onClick;
       return btn;
     };
@@ -255,8 +249,6 @@ export class MainMenu extends Scene {
         scratchBtn.style.display = 'none';
       }
     });
-    scratchBtn.style.backgroundColor = '#47aba9';
-    scratchBtn.onmouseout = () => scratchBtn.style.backgroundColor = '#47aba9';
     
     const confirmScratchBtn = createBtn('Go', () => {
       const w = parseInt(widthInput.value) || 6;
@@ -264,9 +256,8 @@ export class MainMenu extends Scene {
       overlay.remove();
       this.scene.start('LevelDesigner', { gridWidth: w, gridHeight: h });
     });
-    confirmScratchBtn.style.backgroundColor = '#47aba9';
-    confirmScratchBtn.onmouseout = () => confirmScratchBtn.style.backgroundColor = '#47aba9';
-    confirmScratchBtn.style.padding = '5px 15px';
+    confirmScratchBtn.style.minWidth = 'auto'; // let it shrink for "Go"
+    confirmScratchBtn.style.padding = '10px 20px';
 
     inputContainer.appendChild(spanW);
     inputContainer.appendChild(widthInput);
@@ -279,8 +270,6 @@ export class MainMenu extends Scene {
     btnContainer.appendChild(scratchContainer);
 
     const cancelBtn = createBtn('Cancel', () => overlay.remove());
-    cancelBtn.style.backgroundColor = '#ff4444';
-    cancelBtn.onmouseout = () => cancelBtn.style.backgroundColor = '#ff4444';
     btnContainer.appendChild(cancelBtn);
 
     document.body.appendChild(overlay);
@@ -289,29 +278,53 @@ export class MainMenu extends Scene {
   showPopup(msg: string) {
     const popup = this.add.container(this.scale.width / 2, this.scale.height / 2);
     
-    const bg = this.add.rectangle(0, 0, 400, 200, 0x000000, 0.9);
-    bg.setStrokeStyle(4, 0xffffff);
+    const bg = this.add.image(0, 0, 'popup_bg');
+    bg.setDisplaySize(400, 240);
     
     const text = this.add.text(0, -20, msg, {
-      fontFamily: 'Arial',
+      fontFamily: 'Arial Black',
       fontSize: '24px',
       color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 4,
       align: 'center'
     }).setOrigin(0.5);
 
-    const okBtn = this.add.text(0, 60, 'OK', {
-      fontSize: '24px',
-      backgroundColor: '#555',
-      padding: { x: 30, y: 10 }
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
-      .on('pointerdown', () => {
-        popup.destroy();
-      });
+    const okBtn = this.add.container(0, 70);
+    const okImg = this.add.image(0, 0, 'menu_btn').setInteractive({ useHandCursor: true });
+    okImg.setDisplaySize(140, 50); // smaller button for popup
+    
+    const okText = this.add.text(0, -4, 'OK', {
+      fontFamily: 'Arial Black',
+      fontSize: '20px',
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 4
+    }).setOrigin(0.5);
+
+    okImg.on('pointerdown', () => {
+      okImg.setTexture('menu_btn_pressed');
+      okText.setY(0);
+    });
+    okImg.on('pointerup', () => {
+      okImg.setTexture('menu_btn');
+      okText.setY(-4);
+      popup.destroy();
+    });
+    okImg.on('pointerout', () => {
+      okImg.setTexture('menu_btn');
+      okText.setY(-4);
+    });
+
+    okBtn.add([okImg, okText]);
 
     popup.add([bg, text, okBtn]);
     
     // Scale popup with game size
-    const scaleFactor = Math.min(this.scale.width / 1024, this.scale.height / 768, 1);
+    let scaleFactor = Math.min(this.scale.width / 1024, this.scale.height / 768, 1.5);
+    if (this.scale.width < 800) {
+      scaleFactor = this.scale.width / 400; // Large and readable on mobile phones
+    }
     popup.setScale(scaleFactor);
   }
 }
