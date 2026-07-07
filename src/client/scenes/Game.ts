@@ -92,6 +92,9 @@ export class Game extends Scene {
             console.error('Failed to parse custom level data:', e);
           }
         }
+        
+        // Fire and forget to record an attempt
+        fetch('/api/record-attempt', { method: 'POST' }).catch(e => console.error(e));
 
         this.createGrid(mapKey);
         this.createKnights();
@@ -643,7 +646,16 @@ export class Game extends Scene {
         align: 'left'
       }).setOrigin(0.5, 0.5);
 
-      popup.add(lbText);
+      const attempts = lbData.attempts || 0;
+      const solves = lbData.solves || 0;
+      const statsText = this.add.text(0, 70, `Global Stats: ${attempts} Plays | ${solves} Solves`, {
+        fontFamily: 'Arial',
+        fontSize: '16px',
+        color: '#ffcc00',
+        align: 'center'
+      }).setOrigin(0.5, 0.5);
+
+      popup.add([lbText, statsText]);
 
     } catch (e) {
       loadingText.setText('Failed to load leaderboard.');

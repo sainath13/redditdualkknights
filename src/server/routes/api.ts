@@ -9,6 +9,7 @@ import type {
   SubmitScoreRequest,
   SubmitScoreResponse,
   LeaderboardResponse,
+  RecordAttemptResponse,
 } from '../../shared/api';
 import { createPost } from '../core/post';
 
@@ -148,6 +149,10 @@ api.post('/submit-score', async (c) => {
       personalBest = true;
     }
 
+    // Increment global solves count for this post
+    const solvesKey = `solves_${postId}`;
+    await redis.incrBy(solvesKey, 1);
+
     return c.json<SubmitScoreResponse>({
       type: 'submit_score',
       score,
@@ -156,6 +161,20 @@ api.post('/submit-score', async (c) => {
   } catch (error) {
     console.error('Error submitting score:', error);
     return c.json<ErrorResponse>({ status: 'error', message: 'Failed to submit score' }, 500);
+  }
+});
+
+api.post('/record-attempt', async (c) => {
+  const { postId } = context;
+  if (!postId) return c.json<ErrorResponse>({ status: 'error', message: 'postId is required' }, 400);
+
+  const attemptsKey = `attempts_${postId}`;
+  try {
+    await redis.incrBy(attemptsKey, 1);
+    return c.json<RecordAttemptResponse>({ type: 'record_attempt', status: 'success' });
+  } catch (error) {
+    console.error('Error recording attempt:', error);
+    return c.json<ErrorResponse>({ status: 'error', message: 'Failed to record attempt' }, 500);
   }
 });
 
@@ -169,9 +188,18 @@ api.get('/leaderboard', async (c) => {
   try {
     // Get top 10 players (lowest scores)
     const topScores = await redis.zRange(leaderboardKey, 0, 9, { by: 'rank' });
+    
+    // Fetch attempts and solves stats
+    const attemptsStr = await redis.get(`attempts_${postId}`);
+    const solvesStr = await redis.get(`solves_${postId}`);
+    const attempts = attemptsStr ? parseInt(attemptsStr, 10) : 0;
+    const solves = solvesStr ? parseInt(solvesStr, 10) : 0;
+
     return c.json<LeaderboardResponse>({
       type: 'leaderboard',
-      scores: topScores
+      scores: topScores,
+      attempts,
+      solves
     });
   } catch (error) {
     console.error('Error fetching leaderboard:', error);

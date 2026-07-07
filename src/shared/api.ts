@@ -35,6 +35,13 @@ export type LeaderboardEntry = {
 export type LeaderboardResponse = {
   type: 'leaderboard';
   scores: LeaderboardEntry[];
+  attempts: number;
+  solves: number;
+};
+
+export type RecordAttemptResponse = {
+  type: 'record_attempt';
+  status: 'success';
 };
 
 export type IncrementResponse = {
