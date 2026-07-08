@@ -179,8 +179,7 @@ export class LevelDesigner extends Scene {
     
     // Add Back Button
     const backBtn = this.add.container(20, 20);
-    const backImg = this.add.image(0, 0, 'menu_btn').setOrigin(0, 0).setInteractive({ useHandCursor: true });
-    backImg.setDisplaySize(140, 50);
+    const backImg = this.add.nineslice(0, 0, 'menu_btn', undefined, 140, 50, 32, 32, 32, 32, true, true).setOrigin(0, 0).setInteractive({ useHandCursor: true });
     const backText = this.add.text(70, 25, '⬅ Back', {
       fontFamily: 'Patrick Hand', fontSize: '18px', color: '#ffffff', stroke: '#000000', strokeThickness: 4
     }).setOrigin(0.5);
@@ -193,8 +192,7 @@ export class LevelDesigner extends Scene {
 
     // Publish button
     this.publishBtn = this.add.container(this.scale.width - 20, 20);
-    const pubImg = this.add.image(0, 0, 'menu_btn').setOrigin(1, 0).setInteractive({ useHandCursor: true });
-    pubImg.setDisplaySize(240, 50);
+    const pubImg = this.add.nineslice(0, 0, 'menu_btn', undefined, 240, 50, 32, 32, 32, 32, true, true).setOrigin(1, 0).setInteractive({ useHandCursor: true });
     const pubText = this.add.text(-120, 25, 'Publish to Reddit', {
       fontFamily: 'Patrick Hand', fontSize: '18px', color: '#ffffff', stroke: '#000000', strokeThickness: 4
     }).setOrigin(0.5);

@@ -676,8 +676,7 @@ export class Game extends Scene {
     }
 
     const okBtn = this.add.container(0, 150);
-    const okImg = this.add.image(0, 0, 'menu_btn').setInteractive({ useHandCursor: true });
-    okImg.setDisplaySize(140, 50);
+    const okImg = this.add.nineslice(0, 0, 'menu_btn', undefined, 140, 50, 32, 32, 32, 32, true, true).setInteractive({ useHandCursor: true });
     
     const okText = this.add.text(0, -4, 'Retry', {
       fontFamily: 'Patrick Hand',
@@ -728,8 +727,7 @@ export class Game extends Scene {
 
     // Add a retry button
     const retryBtn = this.add.container(0, 60);
-    const retryImg = this.add.image(0, 0, 'menu_btn').setInteractive({ useHandCursor: true });
-    retryImg.setDisplaySize(140, 50);
+    const retryImg = this.add.nineslice(0, 0, 'menu_btn', undefined, 140, 50, 32, 32, 32, 32, true, true).setInteractive({ useHandCursor: true });
     
     const retryText = this.add.text(0, -4, 'Retry', {
       fontFamily: 'Patrick Hand',

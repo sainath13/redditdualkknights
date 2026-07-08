@@ -63,8 +63,7 @@ export class MainMenu extends Scene {
     if (!this.playBtn) {
       this.playBtn = this.add.container(0, 0);
       
-      const img = this.add.image(0, 0, 'menu_btn').setInteractive({ useHandCursor: true });
-      img.setDisplaySize(240, 65);
+      const img = this.add.nineslice(0, 0, 'menu_btn', undefined, 240, 65, 32, 32, 32, 32, true, true).setInteractive({ useHandCursor: true });
       const txt = this.add.text(0, -4, 'Play Game', {
         fontFamily: 'Patrick Hand',
         fontSize: '28px',
@@ -96,8 +95,7 @@ export class MainMenu extends Scene {
     if (!this.designerBtn) {
       this.designerBtn = this.add.container(0, 0);
       
-      const img = this.add.image(0, 0, 'menu_btn').setInteractive({ useHandCursor: true });
-      img.setDisplaySize(260, 65);
+      const img = this.add.nineslice(0, 0, 'menu_btn', undefined, 260, 65, 32, 32, 32, 32, true, true).setInteractive({ useHandCursor: true });
       const txt = this.add.text(0, -4, 'Level Designer', {
         fontFamily: 'Patrick Hand',
         fontSize: '24px',
@@ -131,6 +129,9 @@ export class MainMenu extends Scene {
   }
 
   private showBaseSelectionPopup() {
+    if (this.playBtn) this.playBtn.setVisible(false);
+    if (this.designerBtn) this.designerBtn.setVisible(false);
+
     const overlay = document.createElement('div');
     overlay.style.position = 'absolute';
     overlay.style.top = '0';
@@ -143,6 +144,23 @@ export class MainMenu extends Scene {
     overlay.style.alignItems = 'center';
     overlay.style.justifyContent = 'center';
     overlay.style.zIndex = '1000';
+
+    const closeOverlay = () => {
+      overlay.remove();
+      if (this.playBtn) this.playBtn.setVisible(true);
+      if (this.designerBtn) this.designerBtn.setVisible(true);
+    };
+
+    const closeBtnImg = document.createElement('img');
+    closeBtnImg.src = 'assets/woodentable/close_button_icon.png';
+    closeBtnImg.style.position = 'absolute';
+    closeBtnImg.style.top = '20px';
+    closeBtnImg.style.right = '20px';
+    closeBtnImg.style.cursor = 'pointer';
+    closeBtnImg.style.width = '40px';
+    closeBtnImg.style.height = '40px';
+    closeBtnImg.onclick = closeOverlay;
+    overlay.appendChild(closeBtnImg);
 
     const title = document.createElement('h1');
     title.innerText = 'Select Base Level';
@@ -168,25 +186,27 @@ export class MainMenu extends Scene {
     const createBtn = (text: string, onClick: () => void) => {
       const btn = document.createElement('button');
       btn.innerText = text;
-      btn.style.padding = '15px 30px';
+      btn.style.padding = '5px 15px';
       btn.style.fontSize = '18px';
       btn.style.fontFamily = 'Patrick Hand';
       btn.style.cursor = 'pointer';
       btn.style.color = 'white';
-      btn.style.border = 'none';
-      btn.style.background = 'url("assets/woodentable/bigBlueButtonUnpressed.png") center/100% 100% no-repeat';
+      btn.style.borderStyle = 'solid';
+      btn.style.borderWidth = '16px';
+      btn.style.borderImage = 'url("assets/woodentable/bigBlueButtonUnpressed.png") 32 fill repeat';
+      btn.style.backgroundColor = 'transparent';
+      btn.style.background = 'none';
       btn.style.textShadow = '-2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000';
       btn.style.minWidth = '200px'; // Give it some width
-      btn.style.backgroundColor = 'transparent'; // prevent default background
       
       btn.onmouseout = () => {
-         btn.style.background = 'url("assets/woodentable/bigBlueButtonUnpressed.png") center/100% 100% no-repeat';
+         btn.style.borderImage = 'url("assets/woodentable/bigBlueButtonUnpressed.png") 32 fill repeat';
       };
       btn.onmousedown = () => {
-         btn.style.background = 'url("assets/woodentable/bluebuttonPressed.png") center/100% 100% no-repeat';
+         btn.style.borderImage = 'url("assets/woodentable/bluebuttonPressed.png") 32 fill repeat';
       };
       btn.onmouseup = () => {
-         btn.style.background = 'url("assets/woodentable/bigBlueButtonUnpressed.png") center/100% 100% no-repeat';
+         btn.style.borderImage = 'url("assets/woodentable/bigBlueButtonUnpressed.png") 32 fill repeat';
       };
       btn.onclick = onClick;
       return btn;
@@ -200,12 +220,12 @@ export class MainMenu extends Scene {
           const res = await fetch('assets/baseleveldata/' + baseFile);
           if (!res.ok) throw new Error('Failed to fetch');
           const data = await res.json();
-          overlay.remove();
+          closeOverlay();
           this.scene.start('LevelDesigner', { baseMap: data });
         } catch (error) {
           console.error(error);
           btn.innerText = 'Failed!';
-          setTimeout(() => overlay.remove(), 1000);
+          setTimeout(() => closeOverlay(), 1000);
         }
       });
       btnContainer.appendChild(btn);
@@ -253,7 +273,7 @@ export class MainMenu extends Scene {
     const confirmScratchBtn = createBtn('Go', () => {
       const w = parseInt(widthInput.value) || 6;
       const h = parseInt(heightInput.value) || 8;
-      overlay.remove();
+      closeOverlay();
       this.scene.start('LevelDesigner', { gridWidth: w, gridHeight: h });
     });
     confirmScratchBtn.style.minWidth = 'auto'; // let it shrink for "Go"
@@ -268,9 +288,6 @@ export class MainMenu extends Scene {
     scratchContainer.appendChild(scratchBtn);
     scratchContainer.appendChild(inputContainer);
     btnContainer.appendChild(scratchContainer);
-
-    const cancelBtn = createBtn('Cancel', () => overlay.remove());
-    btnContainer.appendChild(cancelBtn);
 
     document.body.appendChild(overlay);
   }
@@ -296,8 +313,7 @@ export class MainMenu extends Scene {
     const banner = this.add.nineslice(0, -40, 'banner_slots', undefined, bannerWidth, bannerHeight, 64, 64, 64, 64, true, true).setOrigin(0.5);
 
     const okBtn = this.add.container(0, 70);
-    const okImg = this.add.image(0, 0, 'menu_btn').setInteractive({ useHandCursor: true });
-    okImg.setDisplaySize(140, 50); // smaller button for popup
+    const okImg = this.add.nineslice(0, 0, 'menu_btn', undefined, 140, 50, 32, 32, 32, 32, true, true).setInteractive({ useHandCursor: true });
     
     const okText = this.add.text(0, -4, 'OK', {
       fontFamily: 'Patrick Hand',
