@@ -693,7 +693,7 @@ export class LevelDesigner extends Scene {
 
   showPublishPrompt(jsonString: string) {
     if (!this.redStart || !this.blueStart || !this.redDest || !this.blueDest) {
-      alert('You must place both Knights and their Destinations before publishing!');
+      this.showPopup("Level seems incomplete\n\nPlace all knights and destinations!");
       return;
     }
 
@@ -807,6 +807,54 @@ export class LevelDesigner extends Scene {
       delay: 2000,
       onComplete: () => toast.destroy()
     });
+  }
+
+  showPopup(msg: string) {
+    const popup = this.add.container(this.scale.width / 2, this.scale.height / 2);
+    popup.setDepth(2000); // ensure it is above grid and UI
+    
+    const bg = this.add.image(0, 0, 'popup_bg');
+    bg.setDisplaySize(400, 240);
+    
+    const text = this.add.text(0, -15, msg, {
+      fontFamily: 'Patrick Hand',
+      fontSize: '28px',
+      color: '#ffffff',
+      align: 'center',
+      wordWrap: { width: 336, useAdvancedWrap: true }
+    }).setOrigin(0.5);
+
+    const bannerWidth = Math.max(128, text.width + 60);
+    const bannerHeight = Math.max(128, text.height + 60);
+    const banner = this.add.nineslice(0, -15, 'banner_slots', undefined, bannerWidth, bannerHeight, 64, 64, 64, 64, true, true).setOrigin(0.5);
+
+    const okBtn = this.add.container(0, 80);
+    const okImg = this.add.nineslice(0, 0, 'menu_btn', undefined, 140, 50, 32, 32, 32, 32, true, true).setInteractive({ useHandCursor: true });
+    
+    const okText = this.add.text(0, -4, 'OK', {
+      fontFamily: 'Patrick Hand',
+      fontSize: '20px',
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 4
+    }).setOrigin(0.5);
+
+    okImg.on('pointerdown', () => {
+      okImg.setTexture('menu_btn_pressed');
+      okText.setY(0);
+    });
+    okImg.on('pointerup', () => {
+      okImg.setTexture('menu_btn');
+      okText.setY(-4);
+      popup.destroy();
+    });
+    okImg.on('pointerout', () => {
+      okImg.setTexture('menu_btn');
+      okText.setY(-4);
+    });
+
+    okBtn.add([okImg, okText]);
+    popup.add([bg, banner, text, okBtn]);
   }
 
   updateLayout(width: number, height: number) {

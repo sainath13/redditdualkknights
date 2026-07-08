@@ -298,7 +298,7 @@ export class MainMenu extends Scene {
     const bg = this.add.image(0, 0, 'popup_bg');
     bg.setDisplaySize(400, 240);
     
-    const text = this.add.text(0, -40, msg, {
+    const text = this.add.text(0, -15, msg, {
       fontFamily: 'Patrick Hand',
       fontSize: '24px',
       color: '#ffffff',
@@ -310,9 +310,9 @@ export class MainMenu extends Scene {
 
     const bannerWidth = Math.max(128, text.width + 60);
     const bannerHeight = Math.max(128, text.height + 60);
-    const banner = this.add.nineslice(0, -40, 'banner_slots', undefined, bannerWidth, bannerHeight, 64, 64, 64, 64, true, true).setOrigin(0.5);
+    const banner = this.add.nineslice(0, -15, 'banner_slots', undefined, bannerWidth, bannerHeight, 64, 64, 64, 64, true, true).setOrigin(0.5);
 
-    const okBtn = this.add.container(0, 70);
+    const okBtn = this.add.container(0, 80);
     const okImg = this.add.nineslice(0, 0, 'menu_btn', undefined, 140, 50, 32, 32, 32, 32, true, true).setInteractive({ useHandCursor: true });
     
     const okText = this.add.text(0, -4, 'OK', {
