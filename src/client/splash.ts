@@ -22,9 +22,25 @@ discordLink.addEventListener('click', () => {
 });
 
 const titleElement = document.getElementById('title') as HTMLHeadingElement;
+const statsElement = document.getElementById('stats-text') as HTMLParagraphElement;
+
+async function fetchStats() {
+  try {
+    const res = await fetch('/api/leaderboard');
+    if (res.ok) {
+      const data = await res.json();
+      const attempts = data.attempts || 0;
+      const solves = data.solves || 0;
+      statsElement.textContent = `Global Stats: ${attempts} Plays | ${solves} Solves`;
+    }
+  } catch (e) {
+    console.error('Failed to fetch stats:', e);
+  }
+}
 
 function init() {
   titleElement.textContent = `Hey ${context.username ?? 'user'} 👋`;
+  fetchStats();
 }
 
 init();
