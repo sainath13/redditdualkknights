@@ -281,13 +281,14 @@ export class MainMenu extends Scene {
     const bg = this.add.image(0, 0, 'popup_bg');
     bg.setDisplaySize(400, 240);
     
-    const text = this.add.text(0, -20, msg, {
+    const text = this.add.text(0, -40, msg, {
       fontFamily: 'Arial Black',
       fontSize: '24px',
       color: '#ffffff',
       stroke: '#000000',
       strokeThickness: 4,
-      align: 'center'
+      align: 'center',
+      wordWrap: { width: 336, useAdvancedWrap: true }
     }).setOrigin(0.5);
 
     const okBtn = this.add.container(0, 70);

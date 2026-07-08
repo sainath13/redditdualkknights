@@ -112,6 +112,9 @@ export class Preloader extends Scene {
     this.load.image('arrow_right', 'arrow_buttons/right_button.png');
     this.load.image('arrow_right_pressed', 'arrow_buttons/right_button_pressed.png');
     
+    this.load.image('center_btn', 'other_buttons/center_button.png');
+    this.load.image('center_btn_pressed', 'other_buttons/center_button_pressed.png');
+    
     // Map data
     this.load.tilemapTiledJSON('baselevelnine', 'tiledthings/levels/baselevelnine.json');
 

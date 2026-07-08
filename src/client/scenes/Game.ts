@@ -381,11 +381,11 @@ export class Game extends Scene {
     this.controlsContainer.add(this.selectBtnContainer);
 
     // Arrange buttons in a circle around the center (0,0)
-    // Distance from center = 55px
-    createBtn(-55, 0, 'arrow_left', -1, 0);
-    createBtn(55, 0, 'arrow_right', 1, 0);
-    createBtn(0, -55, 'arrow_up', 0, -1);
-    createBtn(0, 55, 'arrow_down', 0, 1);
+    // Distance from center = 45px
+    createBtn(-45, 0, 'arrow_left', -1, 0);
+    createBtn(45, 0, 'arrow_right', 1, 0);
+    createBtn(0, -45, 'arrow_up', 0, -1);
+    createBtn(0, 45, 'arrow_down', 0, 1);
     
     // HUD Buttons on the right side of screen (hudContainer)
     // 2x2 Grid Layout
@@ -393,14 +393,14 @@ export class Game extends Scene {
     const offset = 30;
 
     // Relocate Button (Top Left)
-    const resetBtn = this.add.text(-offset, -offset, '🎯', {
-      fontSize: '36px',
-      backgroundColor: '#555',
-      padding: { x: 5, y: 5 }
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    const resetBtn = this.add.image(-offset, -offset, 'center_btn').setOrigin(0.5).setInteractive({ useHandCursor: true });
+    resetBtn.setDisplaySize(btnScale, btnScale);
     resetBtn.on('pointerdown', () => {
+      resetBtn.setTexture('center_btn_pressed');
       this.resetView();
     });
+    resetBtn.on('pointerup', () => resetBtn.setTexture('center_btn'));
+    resetBtn.on('pointerout', () => resetBtn.setTexture('center_btn'));
 
     // Step Count (Top Right)
     const stepsBg = this.add.image(offset, -offset, 'btn_steps').setOrigin(0.5);
@@ -596,16 +596,21 @@ export class Game extends Scene {
       fontFamily: 'Arial',
       fontSize: '32px',
       color: '#ffcc00',
-      align: 'center'
+      align: 'center',
+      wordWrap: { width: 436, useAdvancedWrap: true }
     }).setOrigin(0.5);
 
     const scoreText = this.add.text(0, -110, `You finished in ${this.stepCount} steps!`, {
       fontSize: '20px',
-      color: '#ffffff'
+      color: '#ffffff',
+      align: 'center',
+      wordWrap: { width: 436, useAdvancedWrap: true }
     }).setOrigin(0.5);
 
     const loadingText = this.add.text(0, -20, 'Submitting score...', {
-      fontSize: '20px', color: '#aaaaaa'
+      fontSize: '20px', color: '#aaaaaa',
+      align: 'center',
+      wordWrap: { width: 436, useAdvancedWrap: true }
     }).setOrigin(0.5);
 
     popup.add([bg, title, scoreText, loadingText]);
@@ -643,7 +648,8 @@ export class Game extends Scene {
       const lbText = this.add.text(0, 0, lbString, {
         fontSize: '20px',
         color: '#88ff88',
-        align: 'left'
+        align: 'left',
+        wordWrap: { width: 436, useAdvancedWrap: true }
       }).setOrigin(0.5, 0.5);
 
       const attempts = lbData.attempts || 0;
@@ -652,7 +658,8 @@ export class Game extends Scene {
         fontFamily: 'Arial',
         fontSize: '16px',
         color: '#ffcc00',
-        align: 'center'
+        align: 'center',
+        wordWrap: { width: 436, useAdvancedWrap: true }
       }).setOrigin(0.5, 0.5);
 
       popup.add([lbText, statsText]);
@@ -701,11 +708,12 @@ export class Game extends Scene {
     const bg = this.add.image(0, 0, 'popup_bg');
     bg.setDisplaySize(400, 240);
     
-    const text = this.add.text(0, 0, msg, {
+    const text = this.add.text(0, -30, msg, {
       fontFamily: 'Arial Black',
       fontSize: '32px',
       color: '#ffffff',
-      align: 'center'
+      align: 'center',
+      wordWrap: { width: 336, useAdvancedWrap: true }
     }).setOrigin(0.5);
 
     // Add a retry button
