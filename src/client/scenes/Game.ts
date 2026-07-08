@@ -202,6 +202,10 @@ export class Game extends Scene {
   createGrid(mapKey: string) {
     const map = this.make.tilemap({ key: mapKey });
     
+    // Set grid dimensions based on the map so centering works for custom sizes
+    this.gridWidth = map.width;
+    this.gridHeight = map.height;
+    
     // Link the tileset names from Tiled to the image keys in Phaser
     const waterTileset = map.addTilesetImage('Water Background color', 'water_tiles');
     const landscapeTileset = map.addTilesetImage('Tilemap_color1', 'landscape_tiles');
@@ -438,9 +442,9 @@ export class Game extends Scene {
   updateLayout(width: number, height: number) {
     this.cameras.resize(width, height);
 
-    // Center grid
-    const totalGridWidth = 6 * this.cellSize;
-    const totalGridHeight = 8 * this.cellSize;
+    // Center grid using dynamic width/height
+    const totalGridWidth = this.gridWidth * this.cellSize;
+    const totalGridHeight = this.gridHeight * this.cellSize;
     
     // Calculate base scale to fit screen, then multiply by 1.1x as requested
     let scaleFactor = Math.min(width / (totalGridWidth + 40), height / (totalGridHeight + 200), 1);
@@ -485,7 +489,7 @@ export class Game extends Scene {
     }
 
     const isBlocked = (x: number, y: number) => {
-      if (x < 0 || x >= this.gridWidth || y < 0 || y >= this.gridHeight) return true;
+      // The grid is always surrounded by fences, so we don't need hardcoded edge checks
       if (this.obstacles.some(o => o.x === x && o.y === y)) return true;
       return false;
     };
