@@ -182,7 +182,7 @@ export class LevelDesigner extends Scene {
     const backImg = this.add.image(0, 0, 'menu_btn').setOrigin(0, 0).setInteractive({ useHandCursor: true });
     backImg.setDisplaySize(140, 50);
     const backText = this.add.text(70, 25, '⬅ Back', {
-      fontFamily: 'Arial Black', fontSize: '18px', color: '#ffffff', stroke: '#000000', strokeThickness: 4
+      fontFamily: 'Patrick Hand', fontSize: '18px', color: '#ffffff', stroke: '#000000', strokeThickness: 4
     }).setOrigin(0.5);
     
     backImg.on('pointerdown', () => { backImg.setTexture('menu_btn_pressed'); backText.setY(29); });
@@ -196,7 +196,7 @@ export class LevelDesigner extends Scene {
     const pubImg = this.add.image(0, 0, 'menu_btn').setOrigin(1, 0).setInteractive({ useHandCursor: true });
     pubImg.setDisplaySize(240, 50);
     const pubText = this.add.text(-120, 25, 'Publish to Reddit', {
-      fontFamily: 'Arial Black', fontSize: '18px', color: '#ffffff', stroke: '#000000', strokeThickness: 4
+      fontFamily: 'Patrick Hand', fontSize: '18px', color: '#ffffff', stroke: '#000000', strokeThickness: 4
     }).setOrigin(0.5);
 
     pubImg.on('pointerdown', () => { pubImg.setTexture('menu_btn_pressed'); pubText.setY(29); });
@@ -713,7 +713,7 @@ export class LevelDesigner extends Scene {
     overlay.style.alignItems = 'center';
     overlay.style.zIndex = '1000';
     overlay.style.color = 'white';
-    overlay.style.fontFamily = 'Arial, sans-serif';
+    overlay.style.fontFamily = 'Patrick Hand, cursive';
 
     const title = document.createElement('h2');
     title.innerText = 'Publish Level to Reddit';

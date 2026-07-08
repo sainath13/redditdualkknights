@@ -66,7 +66,7 @@ export class MainMenu extends Scene {
       const img = this.add.image(0, 0, 'menu_btn').setInteractive({ useHandCursor: true });
       img.setDisplaySize(240, 65);
       const txt = this.add.text(0, -4, 'Play Game', {
-        fontFamily: 'Arial Black',
+        fontFamily: 'Patrick Hand',
         fontSize: '28px',
         color: '#ffffff',
         stroke: '#000000',
@@ -99,7 +99,7 @@ export class MainMenu extends Scene {
       const img = this.add.image(0, 0, 'menu_btn').setInteractive({ useHandCursor: true });
       img.setDisplaySize(260, 65);
       const txt = this.add.text(0, -4, 'Level Designer', {
-        fontFamily: 'Arial Black',
+        fontFamily: 'Patrick Hand',
         fontSize: '24px',
         color: '#ffffff',
         stroke: '#000000',
@@ -147,7 +147,7 @@ export class MainMenu extends Scene {
     const title = document.createElement('h1');
     title.innerText = 'Select Base Level';
     title.style.color = 'white';
-    title.style.fontFamily = 'Arial, sans-serif';
+    title.style.fontFamily = 'Patrick Hand, cursive';
     title.style.marginBottom = '20px';
     overlay.appendChild(title);
 
@@ -170,7 +170,7 @@ export class MainMenu extends Scene {
       btn.innerText = text;
       btn.style.padding = '15px 30px';
       btn.style.fontSize = '18px';
-      btn.style.fontFamily = 'Arial Black';
+      btn.style.fontFamily = 'Patrick Hand';
       btn.style.cursor = 'pointer';
       btn.style.color = 'white';
       btn.style.border = 'none';
@@ -282,7 +282,7 @@ export class MainMenu extends Scene {
     bg.setDisplaySize(400, 240);
     
     const text = this.add.text(0, -40, msg, {
-      fontFamily: 'Arial Black',
+      fontFamily: 'Patrick Hand',
       fontSize: '24px',
       color: '#ffffff',
       stroke: '#000000',
@@ -291,12 +291,16 @@ export class MainMenu extends Scene {
       wordWrap: { width: 336, useAdvancedWrap: true }
     }).setOrigin(0.5);
 
+    const bannerWidth = Math.max(128, text.width + 60);
+    const bannerHeight = Math.max(128, text.height + 60);
+    const banner = this.add.nineslice(0, -40, 'banner_slots', undefined, bannerWidth, bannerHeight, 64, 64, 64, 64, true, true).setOrigin(0.5);
+
     const okBtn = this.add.container(0, 70);
     const okImg = this.add.image(0, 0, 'menu_btn').setInteractive({ useHandCursor: true });
     okImg.setDisplaySize(140, 50); // smaller button for popup
     
     const okText = this.add.text(0, -4, 'OK', {
-      fontFamily: 'Arial Black',
+      fontFamily: 'Patrick Hand',
       fontSize: '20px',
       color: '#ffffff',
       stroke: '#000000',
@@ -319,7 +323,7 @@ export class MainMenu extends Scene {
 
     okBtn.add([okImg, okText]);
 
-    popup.add([bg, text, okBtn]);
+    popup.add([bg, banner, text, okBtn]);
     
     // Scale popup with game size
     let scaleFactor = Math.min(this.scale.width / 1024, this.scale.height / 768, 1.5);

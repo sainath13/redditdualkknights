@@ -410,7 +410,7 @@ export class Game extends Scene {
     const stepsBg = this.add.image(offset, -offset, 'btn_steps').setOrigin(0.5);
     stepsBg.setDisplaySize(btnScale, btnScale);
     this.stepText = this.add.text(offset, -offset, '0', {
-      fontFamily: 'Arial',
+      fontFamily: 'Patrick Hand',
       fontSize: '24px',
       color: '#333333',
       fontStyle: 'bold'
@@ -595,9 +595,11 @@ export class Game extends Scene {
     
     const bg = this.add.image(0, 0, 'popup_bg');
     bg.setDisplaySize(500, 400);
+
+    const banner = this.add.nineslice(0, -45, 'banner_slots', undefined, 470, 280, 64, 64, 64, 64, true, true).setOrigin(0.5);
     
     const title = this.add.text(0, -160, 'Level Complete!', {
-      fontFamily: 'Arial',
+      fontFamily: 'Patrick Hand',
       fontSize: '32px',
       color: '#ffcc00',
       align: 'center',
@@ -617,7 +619,7 @@ export class Game extends Scene {
       wordWrap: { width: 436, useAdvancedWrap: true }
     }).setOrigin(0.5);
 
-    popup.add([bg, title, scoreText, loadingText]);
+    popup.add([bg, banner, title, scoreText, loadingText]);
 
     let scaleFactor = Math.min(this.scale.width / 1024, this.scale.height / 768, 1.2);
     if (this.scale.width < 800) {
@@ -659,7 +661,7 @@ export class Game extends Scene {
       const attempts = lbData.attempts || 0;
       const solves = lbData.solves || 0;
       const statsText = this.add.text(0, 70, `Global Stats: ${attempts} Plays | ${solves} Solves`, {
-        fontFamily: 'Arial',
+        fontFamily: 'Patrick Hand',
         fontSize: '16px',
         color: '#ffcc00',
         align: 'center',
@@ -678,7 +680,7 @@ export class Game extends Scene {
     okImg.setDisplaySize(140, 50);
     
     const okText = this.add.text(0, -4, 'Retry', {
-      fontFamily: 'Arial Black',
+      fontFamily: 'Patrick Hand',
       fontSize: '20px',
       color: '#ffffff',
       stroke: '#000000',
@@ -713,12 +715,16 @@ export class Game extends Scene {
     bg.setDisplaySize(400, 240);
     
     const text = this.add.text(0, -30, msg, {
-      fontFamily: 'Arial Black',
+      fontFamily: 'Patrick Hand',
       fontSize: '32px',
       color: '#ffffff',
       align: 'center',
       wordWrap: { width: 336, useAdvancedWrap: true }
     }).setOrigin(0.5);
+
+    const bannerWidth = Math.max(128, text.width + 60);
+    const bannerHeight = Math.max(128, text.height + 60);
+    const banner = this.add.nineslice(0, -30, 'banner_slots', undefined, bannerWidth, bannerHeight, 64, 64, 64, 64, true, true).setOrigin(0.5);
 
     // Add a retry button
     const retryBtn = this.add.container(0, 60);
@@ -726,7 +732,7 @@ export class Game extends Scene {
     retryImg.setDisplaySize(140, 50);
     
     const retryText = this.add.text(0, -4, 'Retry', {
-      fontFamily: 'Arial Black',
+      fontFamily: 'Patrick Hand',
       fontSize: '20px',
       color: '#ffffff',
       stroke: '#000000',
@@ -748,7 +754,7 @@ export class Game extends Scene {
     });
 
     retryBtn.add([retryImg, retryText]);
-    popup.add([bg, text, retryBtn]);
+    popup.add([bg, banner, text, retryBtn]);
     
     // Scale popup with game size
     let scaleFactor = Math.min(this.scale.width / 1024, this.scale.height / 768, 1.5);

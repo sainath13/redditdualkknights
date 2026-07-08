@@ -1,8 +1,14 @@
+@font-face {
+  font-family: 'Patrick Hand';
+  src: url('/assets/fonts/PatrickHand-Regular.ttf') format('truetype');
+}
+
 body {
   margin: 0;
   padding: 0;
   color: rgba(255, 255, 255, 0.87);
   background-color: #47aba9;
+  font-family: 'Patrick Hand', sans-serif;
 }
 
 #app {

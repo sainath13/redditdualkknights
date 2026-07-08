@@ -94,9 +94,10 @@ export class Preloader extends Scene {
     this.load.image('btn_close_pressed', 'other_buttons/close_button_pressed.png');
     
     // Main Menu buttons
+    this.load.image('popup_bg', 'woodentable/woodentable.png');
     this.load.image('menu_btn', 'woodentable/bigBlueButtonUnpressed.png');
     this.load.image('menu_btn_pressed', 'woodentable/bluebuttonPressed.png');
-    this.load.image('popup_bg', 'woodentable/woodentable.png');
+    this.load.image('banner_slots', 'woodentable/Banner_Slots.png');
     this.load.image('btn_steps', 'other_buttons/steps_button.png');
     this.load.image('btn_steps_pressed', 'other_buttons/steps_button_pressed.png');
     this.load.image('btn_replay', 'other_buttons/replay_button.png');
