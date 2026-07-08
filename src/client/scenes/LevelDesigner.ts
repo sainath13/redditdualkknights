@@ -457,30 +457,30 @@ export class LevelDesigner extends Scene {
     this.brushText = this.add.text(0, 310, 'Current Brush:\nGrass (Middle)', { fontSize: '20px', align: 'center' }).setOrigin(0.5);
     this.uiContainer.add(this.brushText);
 
-    const allBrushes: { type: BrushType, label: string, emoji?: string }[] = [
+    const allBrushes: { type: BrushType, label: string, emoji?: string, texture?: string }[] = [
       // Row 1 & 2: Main Tools
-      { type: 'water', label: 'Water', emoji: '🟦' },
-      { type: 'red_start', label: 'Red Start', emoji: '🔴' },
-      { type: 'blue_start', label: 'Blue Start', emoji: '🔵' },
+      { type: 'water', label: 'Water', texture: 'water_tiles' },
+      { type: 'red_start', label: 'Red Start', texture: 'redknight' },
+      { type: 'blue_start', label: 'Blue Start', texture: 'blueknight' },
       { type: 'eraser', label: 'Eraser', emoji: '🧼' },
-      { type: 'red_dest', label: 'Red Dest', emoji: '❌' },
-      { type: 'blue_dest', label: 'Blue Dest', emoji: '❎' },
+      { type: 'red_dest', label: 'Red Dest', texture: 'btn_red' },
+      { type: 'blue_dest', label: 'Blue Dest', texture: 'btn_blue' },
       // Row 3, 4, 5: Ground
-      { type: 'tile_top_left', label: 'Top Left Edge', emoji: '▛' },
-      { type: 'tile_top_mid', label: 'Top Mid Edge', emoji: '▀' },
-      { type: 'tile_top_right', label: 'Top Right Edge', emoji: '▜' },
-      { type: 'tile_mid_left', label: 'Mid Left Edge', emoji: '▌' },
-      { type: 'tile_middle', label: 'Middle', emoji: '🟩' },
-      { type: 'tile_mid_right', label: 'Mid Right Edge', emoji: '▐' },
-      { type: 'tile_bot_left', label: 'Bot Left Edge', emoji: '▙' },
-      { type: 'tile_bot_mid', label: 'Bot Mid Edge', emoji: '▄' },
-      { type: 'tile_bot_right', label: 'Bot Right Edge', emoji: '▟' },
+      { type: 'tile_top_left', label: 'Top Left Edge' },
+      { type: 'tile_top_mid', label: 'Top Mid Edge' },
+      { type: 'tile_top_right', label: 'Top Right Edge' },
+      { type: 'tile_mid_left', label: 'Mid Left Edge' },
+      { type: 'tile_middle', label: 'Middle' },
+      { type: 'tile_mid_right', label: 'Mid Right Edge' },
+      { type: 'tile_bot_left', label: 'Bot Left Edge' },
+      { type: 'tile_bot_mid', label: 'Bot Mid Edge' },
+      { type: 'tile_bot_right', label: 'Bot Right Edge' },
       // Row 6, 7: Obstacles
-      { type: 'obs_bush1', label: 'Bush', emoji: '🌳' },
-      { type: 'obs_pumpkin1', label: 'Pumpkin 1', emoji: '🎃' },
-      { type: 'obs_pumpkin2', label: 'Pumpkin 2', emoji: '🎃' },
-      { type: 'obs_rock', label: 'Rock', emoji: '🪨' },
-      { type: 'enemy_barrel', label: 'Enemy Barrel', emoji: '🛢️' },
+      { type: 'obs_bush1', label: 'Bush' },
+      { type: 'obs_pumpkin1', label: 'Pumpkin 1' },
+      { type: 'obs_pumpkin2', label: 'Pumpkin 2' },
+      { type: 'obs_rock', label: 'Rock' },
+      { type: 'enemy_barrel', label: 'Enemy Barrel' },
       // Row 7, 8, 9: Fences
       { type: 'fence_left_bottom', label: 'Fence LB' },
       { type: 'fence_left_connected_mid_open', label: 'Fence L Conn' },
@@ -522,29 +522,31 @@ export class LevelDesigner extends Scene {
       const x = startX + (col * padding);
       const y = startY + (row * padding);
 
+      const btnBg = this.add.nineslice(x, y, 'menu_btn', undefined, 54, 54, 32, 32, 32, 32, true, true).setInteractive({ useHandCursor: true });
+      
+      btnBg.on('pointerdown', () => {
+        btnBg.setTexture('menu_btn_pressed');
+        this.currentBrush = brush.type;
+        this.brushText.setText(`Current Brush:\n${brush.label}`);
+      });
+      btnBg.on('pointerup', () => btnBg.setTexture('menu_btn'));
+      btnBg.on('pointerout', () => btnBg.setTexture('menu_btn'));
+      this.uiContainer.add(btnBg);
+
       if (brush.emoji) {
-        const btn = this.add.text(x, y, brush.emoji, {
-          fontSize: '24px',
-          backgroundColor: '#555',
-          padding: { x: 8, y: 8 }
-        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-        
-        btn.on('pointerdown', () => {
-          this.currentBrush = brush.type;
-          this.brushText.setText(`Current Brush:\n${brush.label}`);
-        });
-        this.uiContainer.add(btn);
+        const txt = this.add.text(x, y - 4, brush.emoji, { fontSize: '24px' }).setOrigin(0.5);
+        this.uiContainer.add(txt);
       } else {
-        const btnBg = this.add.rectangle(x, y, 48, 48, 0x555555).setInteractive({ useHandCursor: true });
-        const img = this.add.image(x, y, brush.type).setDisplaySize(40, 40);
+        const tex = brush.texture || brush.type;
+        const img = this.add.image(x, y - 4, tex);
         
-        btnBg.on('pointerdown', () => {
-          this.currentBrush = brush.type;
-          this.brushText.setText(`Current Brush:\n${brush.label}`);
-        });
-        img.on('pointerdown', () => btnBg.emit('pointerdown'));
+        // Scale down if it's too big for the 54x54 button
+        if (img.width > 40 || img.height > 40) {
+          const scale = 40 / Math.max(img.width, img.height);
+          img.setScale(scale);
+        }
         
-        this.uiContainer.add([btnBg, img]);
+        this.uiContainer.add(img);
       }
     });
   }
