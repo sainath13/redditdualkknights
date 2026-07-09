@@ -388,7 +388,7 @@ export class Game extends Scene {
     // Distance from center = 45px
     createBtn(-45, 0, 'arrow_left', -1, 0);
     createBtn(45, 0, 'arrow_right', 1, 0);
-    createBtn(0, -45, 'arrow_up', 0, -1);
+    createBtn(0, -55, 'arrow_up', 0, -1);
     createBtn(0, 45, 'arrow_down', 0, 1);
     
     // HUD Buttons on the right side of screen (hudContainer)

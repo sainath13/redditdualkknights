@@ -522,29 +522,29 @@ export class LevelDesigner extends Scene {
       const x = startX + (col * padding);
       const y = startY + (row * padding);
 
-      const btnBg = this.add.nineslice(x, y, 'menu_btn', undefined, 54, 54, 32, 32, 32, 32, true, true).setInteractive({ useHandCursor: true });
-      
-      btnBg.on('pointerdown', () => {
-        btnBg.setTexture('menu_btn_pressed');
-        this.currentBrush = brush.type;
-        this.brushText.setText(`Current Brush:\n${brush.label}`);
-      });
-      btnBg.on('pointerup', () => btnBg.setTexture('menu_btn'));
-      btnBg.on('pointerout', () => btnBg.setTexture('menu_btn'));
-      this.uiContainer.add(btnBg);
-
       if (brush.emoji) {
-        const txt = this.add.text(x, y - 4, brush.emoji, { fontSize: '24px' }).setOrigin(0.5);
+        const txt = this.add.text(x, y, brush.emoji, { fontSize: '32px' }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        
+        txt.on('pointerdown', () => {
+          this.currentBrush = brush.type;
+          this.brushText.setText(`Current Brush:\n${brush.label}`);
+        });
+        
         this.uiContainer.add(txt);
       } else {
         const tex = brush.texture || brush.type;
-        const img = this.add.image(x, y - 4, tex);
+        const img = this.add.image(x, y, tex).setInteractive({ useHandCursor: true });
         
-        // Scale down if it's too big for the 54x54 button
-        if (img.width > 40 || img.height > 40) {
-          const scale = 40 / Math.max(img.width, img.height);
+        // Scale down if it's too big (padding is 60, so 48 is a good max size)
+        if (img.width > 48 || img.height > 48) {
+          const scale = 48 / Math.max(img.width, img.height);
           img.setScale(scale);
         }
+        
+        img.on('pointerdown', () => {
+          this.currentBrush = brush.type;
+          this.brushText.setText(`Current Brush:\n${brush.label}`);
+        });
         
         this.uiContainer.add(img);
       }
