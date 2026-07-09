@@ -17,7 +17,7 @@ export class Game extends Scene {
   blueFinalPos = { x: 4, y: 4 };
   
   obstacles: { type: string, x: number, y: number }[] = [];
-  enemies: { type: string, x: number, y: number }[] = [];
+  enemies: { type: string, x: number, y: number, sprite?: Phaser.GameObjects.Sprite | Phaser.GameObjects.Image }[] = [];
   
   stepCount = 0;
   stepText!: Phaser.GameObjects.Text;
@@ -302,6 +302,7 @@ export class Game extends Scene {
       const scale = (this.cellSize * 0.9) / img.width;
       img.setScale(scale);
       this.gridContainer.add(img);
+      enemy.sprite = img;
     });
 
     // Destinations (no offset needed for baselevelfive)
@@ -538,6 +539,8 @@ export class Game extends Scene {
         this.gameOver = true;
         this.updateKnightPositions(true);
         setTimeout(() => {
+          this.redKnight.setVisible(false);
+          this.blueKnight.setVisible(false);
           let count = 0;
           const onComplete = () => {
             count++;
@@ -558,6 +561,7 @@ export class Game extends Scene {
     const px = x * this.cellSize + this.cellSize / 2;
     const py = y * this.cellSize + this.cellSize / 2 - 8;
     const explosion = this.add.sprite(px, py, 'explosion').setDepth(10);
+    this.gridContainer.add(explosion);
     const scale = (this.cellSize * 1.5) / 128;
     explosion.setScale(scale);
     
@@ -605,6 +609,8 @@ export class Game extends Scene {
     if (this.redPos.x === this.bluePos.x && this.redPos.y === this.bluePos.y) {
       this.gameOver = true;
       setTimeout(() => {
+        this.redKnight.setVisible(false);
+        this.blueKnight.setVisible(false);
         this.playExplosion(this.redPos.x, this.redPos.y, () => {
           this.showPopup("Game Over!\nKnights collided.");
         });
@@ -627,8 +633,18 @@ export class Game extends Scene {
           }
         };
 
-        if (redHit) this.playExplosion(this.redPos.x, this.redPos.y, onComplete);
-        if (blueHit) this.playExplosion(this.bluePos.x, this.bluePos.y, onComplete);
+        if (redHit) {
+          this.redKnight.setVisible(false);
+          const e = this.enemies.find(e => e.x === this.redPos.x && e.y === this.redPos.y);
+          if (e && e.sprite) e.sprite.setVisible(false);
+          this.playExplosion(this.redPos.x, this.redPos.y, onComplete);
+        }
+        if (blueHit) {
+          this.blueKnight.setVisible(false);
+          const e = this.enemies.find(e => e.x === this.bluePos.x && e.y === this.bluePos.y);
+          if (e && e.sprite) e.sprite.setVisible(false);
+          this.playExplosion(this.bluePos.x, this.bluePos.y, onComplete);
+        }
       }, 150);
       return;
     }
