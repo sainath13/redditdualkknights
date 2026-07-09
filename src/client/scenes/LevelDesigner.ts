@@ -427,11 +427,21 @@ export class LevelDesigner extends Scene {
     this.enemyImages.forEach(img => img.destroy());
     this.enemyImages = [];
     this.enemies.forEach(enemy => {
-      const img = this.add.image(
-        enemy.x * this.cellSize + this.cellSize / 2, 
-        enemy.y * this.cellSize + this.cellSize / 2 - 8,
-        enemy.type
-      );
+      let img;
+      if (enemy.type === 'enemy_barrel') {
+        img = this.add.sprite(
+          enemy.x * this.cellSize + this.cellSize / 2, 
+          enemy.y * this.cellSize + this.cellSize / 2 - 8,
+          enemy.type
+        );
+        img.play('anim_barrel');
+      } else {
+        img = this.add.image(
+          enemy.x * this.cellSize + this.cellSize / 2, 
+          enemy.y * this.cellSize + this.cellSize / 2 - 8,
+          enemy.type
+        );
+      }
       const scale = (this.cellSize * 0.9) / img.width;
       img.setScale(scale);
       img.setDepth(3);
@@ -533,7 +543,13 @@ export class LevelDesigner extends Scene {
         this.uiContainer.add(txt);
       } else {
         const tex = brush.texture || brush.type;
-        const img = this.add.image(x, y, tex).setInteractive({ useHandCursor: true });
+        let img;
+        if (tex === 'enemy_barrel') {
+          img = this.add.sprite(x, y, tex).setInteractive({ useHandCursor: true });
+          img.play('anim_barrel');
+        } else {
+          img = this.add.image(x, y, tex).setInteractive({ useHandCursor: true });
+        }
         
         // Scale down if it's too big (padding is 60, so 48 is a good max size)
         if (img.width > 48 || img.height > 48) {

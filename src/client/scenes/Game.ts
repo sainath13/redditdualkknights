@@ -284,11 +284,21 @@ export class Game extends Scene {
 
     // Render enemies
     this.enemies.forEach(enemy => {
-      const img = this.add.image(
-        enemy.x * this.cellSize + this.cellSize / 2, 
-        enemy.y * this.cellSize + this.cellSize / 2 - 8,
-        enemy.type
-      );
+      let img;
+      if (enemy.type === 'enemy_barrel') {
+        img = this.add.sprite(
+          enemy.x * this.cellSize + this.cellSize / 2, 
+          enemy.y * this.cellSize + this.cellSize / 2 - 8,
+          enemy.type
+        );
+        img.play('anim_barrel');
+      } else {
+        img = this.add.image(
+          enemy.x * this.cellSize + this.cellSize / 2, 
+          enemy.y * this.cellSize + this.cellSize / 2 - 8,
+          enemy.type
+        );
+      }
       const scale = (this.cellSize * 0.9) / img.width;
       img.setScale(scale);
       this.gridContainer.add(img);
@@ -525,15 +535,37 @@ export class Game extends Scene {
         this.bluePos.x === oldRedX && this.bluePos.y === oldRedY;
 
       if (swapped) {
-        this.updateKnightPositions(true);
-        this.showPopup("Game Over!\nKnights crossed paths.");
         this.gameOver = true;
+        this.updateKnightPositions(true);
+        setTimeout(() => {
+          let count = 0;
+          const onComplete = () => {
+            count++;
+            if (count === 2) this.showPopup("Game Over!\nKnights crossed paths.");
+          };
+          this.playExplosion(this.redPos.x, this.redPos.y, onComplete);
+          this.playExplosion(this.bluePos.x, this.bluePos.y, onComplete);
+        }, 150);
         return;
       }
 
       this.updateKnightPositions(true);
       this.checkWinCondition();
     }
+  }
+
+  playExplosion(x: number, y: number, onComplete: () => void) {
+    const px = x * this.cellSize + this.cellSize / 2;
+    const py = y * this.cellSize + this.cellSize / 2 - 8;
+    const explosion = this.add.sprite(px, py, 'explosion').setDepth(10);
+    const scale = (this.cellSize * 1.5) / 128;
+    explosion.setScale(scale);
+    
+    explosion.play('anim_explosion');
+    explosion.on('animationcomplete', () => {
+      explosion.destroy();
+      onComplete();
+    });
   }
 
   updateKnightPositions(animate = false) {
@@ -571,15 +603,33 @@ export class Game extends Scene {
 
   checkWinCondition() {
     if (this.redPos.x === this.bluePos.x && this.redPos.y === this.bluePos.y) {
-      this.showPopup("Game Over!\nKnights collided.");
       this.gameOver = true;
+      setTimeout(() => {
+        this.playExplosion(this.redPos.x, this.redPos.y, () => {
+          this.showPopup("Game Over!\nKnights collided.");
+        });
+      }, 150);
       return;
     }
 
-    if (this.enemies.some(e => e.x === this.redPos.x && e.y === this.redPos.y) || 
-        this.enemies.some(e => e.x === this.bluePos.x && e.y === this.bluePos.y)) {
-      this.showPopup("Game Over!\nYou hit a barrel!");
+    const redHit = this.enemies.some(e => e.x === this.redPos.x && e.y === this.redPos.y);
+    const blueHit = this.enemies.some(e => e.x === this.bluePos.x && e.y === this.bluePos.y);
+    if (redHit || blueHit) {
       this.gameOver = true;
+      setTimeout(() => {
+        let explosions = 0;
+        const totalExplosions = (redHit ? 1 : 0) + (blueHit ? 1 : 0);
+        
+        const onComplete = () => {
+          explosions++;
+          if (explosions === totalExplosions) {
+            this.showPopup("Game Over!\nYou hit a barrel!");
+          }
+        };
+
+        if (redHit) this.playExplosion(this.redPos.x, this.redPos.y, onComplete);
+        if (blueHit) this.playExplosion(this.bluePos.x, this.bluePos.y, onComplete);
+      }, 150);
       return;
     }
 

@@ -56,7 +56,8 @@ export class Preloader extends Scene {
     this.load.image('obs_pumpkin2', 'obstacles/pumpkin2.png');
     this.load.image('obs_rock', 'obstacles/rock.png');
     // Enemies
-    this.load.image('enemy_barrel', 'enemy/singleredbarel.png');
+    this.load.spritesheet('enemy_barrel', 'enemy/animating_barrel.png', { frameWidth: 86, frameHeight: 86 });
+    this.load.spritesheet('explosion', 'enemy/animating_explosion_dead.png', { frameWidth: 128, frameHeight: 128 });
     
     // Fences
     this.load.image('fence_left_bottom', 'fence/left_bottom_fence.png');
@@ -127,6 +128,19 @@ export class Preloader extends Scene {
   create() {
     //  When all the assets have loaded, it's often worth creating global objects here that the rest of the game can use.
     //  For example, you can define global animations here, so we can use them in other scenes.
+    this.anims.create({
+      key: 'anim_barrel',
+      frames: this.anims.generateFrameNumbers('enemy_barrel', { start: 0, end: 23 }),
+      frameRate: 10,
+      repeat: -1
+    });
+
+    this.anims.create({
+      key: 'anim_explosion',
+      frames: this.anims.generateFrameNumbers('explosion', { start: 0, end: 22 }),
+      frameRate: 20, // A bit faster for explosion, or use 10? The user said "play them at 10 fps" for the barrel, but didn't specify for explosion.
+      repeat: 0 // play once
+    });
 
     //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
     this.scene.start('MainMenu');
