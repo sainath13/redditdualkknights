@@ -657,6 +657,9 @@ export class Game extends Scene {
   }
 
   async showLeaderboardPopup() {
+    this.controlsContainer.setVisible(false);
+    this.hudContainer.setVisible(false);
+    
     const popup = this.add.container(this.scale.width / 2, this.scale.height / 2);
     
     const bg = this.add.image(0, 0, 'popup_bg');
