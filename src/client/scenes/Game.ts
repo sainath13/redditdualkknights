@@ -514,6 +514,14 @@ export class Game extends Scene {
       dy = -dy;
     }
 
+    if (dx < 0) {
+      this.redKnight.setFlipX(true);
+      this.blueKnight.setFlipX(false);
+    } else if (dx > 0) {
+      this.redKnight.setFlipX(false);
+      this.blueKnight.setFlipX(true);
+    }
+
     const isBlocked = (x: number, y: number) => {
       // The grid is always surrounded by fences, so we don't need hardcoded edge checks
       if (this.obstacles.some(o => o.x === x && o.y === y)) return true;
@@ -633,12 +641,6 @@ export class Game extends Scene {
         if (isMovingX || isMovingY) {
           knight.play(`${color}_run`);
           
-          if (targetX < knight.x) {
-            knight.setFlipX(true);
-          } else if (targetX > knight.x) {
-            knight.setFlipX(false);
-          }
-          
           this.tweens.add({
             targets: knight,
             x: targetX, y: targetY,
@@ -646,11 +648,7 @@ export class Game extends Scene {
             ease: 'Power2',
             onComplete: () => {
               knight.play(`${color}_idle`);
-              if (color === 'red') {
-                knight.setFlipX(false);
-              } else {
-                knight.setFlipX(true);
-              }
+
             }
           });
         }
