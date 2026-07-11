@@ -176,9 +176,13 @@ export class MainMenu extends Scene {
     overlay.appendChild(btnContainer);
 
     // Retrieve list from cache
-    let bases: string[] = [];
+    let bases: {file: string, name: string}[] = [];
     try {
       bases = this.cache.json.get('baselevelmanifest') || [];
+      // Fallback for old string arrays
+      if (bases.length > 0 && typeof bases[0] === 'string') {
+        bases = (bases as any).map((b: string) => ({ file: b, name: b }));
+      }
     } catch (e) {
       console.error(e);
     }
@@ -212,12 +216,12 @@ export class MainMenu extends Scene {
       return btn;
     };
 
-    bases.forEach(baseFile => {
-      const btn = createBtn(baseFile, async () => {
+    bases.forEach(baseInfo => {
+      const btn = createBtn(baseInfo.name, async () => {
         btn.innerText = 'Loading...';
         btn.disabled = true;
         try {
-          const res = await fetch('assets/baseleveldata/' + baseFile);
+          const res = await fetch('assets/baseleveldata/' + baseInfo.file);
           if (!res.ok) throw new Error('Failed to fetch');
           const data = await res.json();
           closeOverlay();

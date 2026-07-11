@@ -55,6 +55,9 @@ export class LevelDesigner extends Scene {
 
   publishBtn!: GameObjects.Container;
   backBtn!: GameObjects.Container;
+  gridToggleBtn!: GameObjects.Container;
+  showGrid = true;
+  gridGraphics!: Phaser.GameObjects.Graphics;
   
   jsonOutput: HTMLTextAreaElement | null = null;
   
@@ -191,6 +194,23 @@ export class LevelDesigner extends Scene {
     
     this.backBtn.add([backImg, backText]);
 
+    // Grid Toggle Button
+    this.gridToggleBtn = this.add.container(this.scale.width - 20, 160);
+    const gridImg = this.add.nineslice(0, 0, 'menu_btn', undefined, 140, 50, 32, 32, 32, 32, true, true).setOrigin(1, 0).setInteractive({ useHandCursor: true });
+    const gridText = this.add.text(-70, 25, 'Grid Toggle', {
+      fontFamily: 'Patrick Hand', fontSize: '18px', color: '#ffffff', stroke: '#000000', strokeThickness: 4
+    }).setOrigin(0.5);
+    
+    gridImg.on('pointerdown', () => { gridImg.setTexture('menu_btn_pressed'); gridText.setY(29); });
+    gridImg.on('pointerup', () => { 
+      gridImg.setTexture('menu_btn'); gridText.setY(25); 
+      this.showGrid = !this.showGrid;
+      if (this.gridGraphics) this.gridGraphics.setVisible(this.showGrid);
+    });
+    gridImg.on('pointerout', () => { gridImg.setTexture('menu_btn'); gridText.setY(25); });
+    
+    this.gridToggleBtn.add([gridImg, gridText]);
+
     // Publish button
     this.publishBtn = this.add.container(this.scale.width - 20, 20);
     const pubImg = this.add.nineslice(0, 0, 'menu_btn', undefined, 240, 70, 32, 32, 32, 32, true, true).setOrigin(1, 0).setInteractive({ useHandCursor: true });
@@ -287,6 +307,21 @@ export class LevelDesigner extends Scene {
     this.gridContainer.add(this.entitySprites['blue_start']);
 
     this.refreshGrid();
+
+    this.gridGraphics = this.add.graphics();
+    this.gridGraphics.lineStyle(2, 0xffffff, 0.3);
+    for (let i = 0; i <= this.gridWidth; i++) {
+      this.gridGraphics.moveTo(i * this.cellSize, 0);
+      this.gridGraphics.lineTo(i * this.cellSize, this.gridHeight * this.cellSize);
+    }
+    for (let j = 0; j <= this.gridHeight; j++) {
+      this.gridGraphics.moveTo(0, j * this.cellSize);
+      this.gridGraphics.lineTo(this.gridWidth * this.cellSize, j * this.cellSize);
+    }
+    this.gridGraphics.strokePath();
+    this.gridGraphics.setDepth(10);
+    this.gridGraphics.setVisible(this.showGrid);
+    this.gridContainer.add(this.gridGraphics);
   }
 
   handlePointer(pointer: Phaser.Input.Pointer) {
@@ -903,6 +938,7 @@ export class LevelDesigner extends Scene {
     this.cameras.resize(width, height);
     this.publishBtn.setPosition(width - 20, 20);
     if (this.backBtn) this.backBtn.setPosition(width - 20, 100);
+    if (this.gridToggleBtn) this.gridToggleBtn.setPosition(width - 20, 160);
 
     const totalGridWidth = this.gridWidth * this.cellSize;
     const totalGridHeight = this.gridHeight * this.cellSize;

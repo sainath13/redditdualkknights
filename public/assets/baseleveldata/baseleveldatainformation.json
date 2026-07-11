@@ -1,3 +1,5 @@
 [
-  "baseW6byheight8.json"
+  { "file": "baseW6byheight8.json", "name": "6 by 8 grid" },
+  { "file": "baseW6Height9.json", "name": "6 by 9 grid" },
+  { "file": "baseW8H10.json", "name": "8 by 10 grid" }
 ]
