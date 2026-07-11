@@ -752,9 +752,7 @@ export class Game extends Scene {
     const okText = this.add.text(0, -4, 'Retry', {
       fontFamily: 'Patrick Hand',
       fontSize: '20px',
-      color: '#ffffff',
-      stroke: '#000000',
-      strokeThickness: 4
+      color: '#ffffff'
     }).setOrigin(0.5);
 
     okImg.on('pointerdown', () => {
@@ -779,9 +777,7 @@ export class Game extends Scene {
     const closeMenuText = this.add.text(0, -4, 'Close', {
       fontFamily: 'Patrick Hand',
       fontSize: '20px',
-      color: '#ffffff',
-      stroke: '#000000',
-      strokeThickness: 4
+      color: '#ffffff'
     }).setOrigin(0.5);
 
     closeMenuImg.on('pointerdown', () => {
