@@ -138,6 +138,12 @@ export class Preloader extends Scene {
     // Landscape tilemap
     this.load.image('landscape_tiles', 'tiledthings/Tilemap_color1.png');
     this.load.image('water_tiles', 'tiledthings/WaterBackground.png');
+
+    // Audio
+    this.load.audio('snd_blocked', 'sounds/blocked.wav');
+    this.load.audio('snd_crash', 'sounds/crash.wav');
+    this.load.audio('snd_explosion', 'sounds/explosion.wav');
+    this.load.audio('snd_level_complete', 'sounds/level_complete.wav');
   }
 
   create() {

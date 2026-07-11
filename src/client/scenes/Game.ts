@@ -104,7 +104,9 @@ export class Game extends Scene {
         this.createControls();
 
         this.updateLayout(this.scale.width, this.scale.height);
-        this.showRulesPopup();
+        if (!this.registry.get('rulesShown')) {
+          this.showRulesPopup();
+        }
       })
       .catch(err => {
         console.error('Error fetching /api/init:', err);
@@ -113,7 +115,9 @@ export class Game extends Scene {
         this.createKnights();
         this.createControls();
         this.updateLayout(this.scale.width, this.scale.height);
-        this.showRulesPopup();
+        if (!this.registry.get('rulesShown')) {
+          this.showRulesPopup();
+        }
       });
 
     this.scale.on('resize', (gameSize: Phaser.Structs.Size) => {
@@ -612,6 +616,7 @@ export class Game extends Scene {
 
       if (swapped) {
         this.gameOver = true;
+        this.sound.play('snd_crash', { volume: 0.5 });
         this.updateKnightPositions(true);
         setTimeout(() => {
           this.redKnight.setVisible(false);
@@ -631,6 +636,7 @@ export class Game extends Scene {
       this.checkWinCondition();
     } else {
       if (!this.cannotMoveText || !this.cannotMoveText.active) {
+        this.sound.play('snd_blocked', { volume: 0.5 });
         this.cannotMoveText = this.add.text(this.scale.width / 2, this.scale.height / 2 - 50, "Cannot move in that direction", {
           fontFamily: 'Patrick Hand',
           fontSize: '28px',
@@ -725,6 +731,7 @@ export class Game extends Scene {
   checkWinCondition() {
     if (this.redPos.x === this.bluePos.x && this.redPos.y === this.bluePos.y) {
       this.gameOver = true;
+      this.sound.play('snd_crash', { volume: 0.5 });
       setTimeout(() => {
         this.redKnight.setVisible(false);
         this.blueKnight.setVisible(false);
@@ -739,6 +746,7 @@ export class Game extends Scene {
     const blueHit = this.enemies.some(e => e.x === this.bluePos.x && e.y === this.bluePos.y);
     if (redHit || blueHit) {
       this.gameOver = true;
+      this.sound.play('snd_explosion', { volume: 0.5 });
       setTimeout(() => {
         let explosions = 0;
         const totalExplosions = (redHit ? 1 : 0) + (blueHit ? 1 : 0);
@@ -769,6 +777,7 @@ export class Game extends Scene {
     if (this.redPos.x === this.redFinalPos.x && this.redPos.y === this.redFinalPos.y &&
         this.bluePos.x === this.blueFinalPos.x && this.bluePos.y === this.blueFinalPos.y) {
       this.gameOver = true;
+      this.sound.play('snd_level_complete', { volume: 0.5 });
       setTimeout(() => {
         void this.showLeaderboardPopup();
       }, 300);
@@ -936,6 +945,7 @@ export class Game extends Scene {
 
 
   showRulesPopup() {
+    this.registry.set('rulesShown', true);
     const popup = this.add.container(this.scale.width / 2, this.scale.height / 2).setDepth(9999);
     
     const bg = this.add.image(0, 0, 'popup_bg');
