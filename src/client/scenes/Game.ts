@@ -729,17 +729,21 @@ export class Game extends Scene {
         wordWrap: { width: 436, useAdvancedWrap: true }
       }).setOrigin(0.5, 0.5);
 
+      const lbBox = this.add.graphics();
+      lbBox.lineStyle(3, 0x693d5b, 1);
+      lbBox.strokeRoundedRect(-160, -140, 320, 220, 16);
+
       const attempts = lbData.attempts || 0;
       const solves = lbData.solves || 0;
       const statsText = this.add.text(0, 110, `Global Stats: ${attempts} Plays | ${solves} Solves`, {
         fontFamily: 'Patrick Hand',
-        fontSize: '16px',
+        fontSize: '20px',
         color: '#ffffff',
         align: 'center',
         wordWrap: { width: 436, useAdvancedWrap: true }
       }).setOrigin(0.5, 0.5);
 
-      popup.add([lbText, statsText]);
+      popup.add([lbBox, lbText, statsText]);
 
     } catch (e) {
       loadingText.setText('Failed to load leaderboard.');
