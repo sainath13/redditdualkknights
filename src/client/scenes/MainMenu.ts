@@ -57,7 +57,7 @@ export class MainMenu extends Scene {
     if (!this.logo) {
       this.logo = this.add.image(0, 0, 'logo');
     }
-    this.logo!.setPosition(width / 2, height * 0.38).setScale(scaleFactor);
+    this.logo!.setPosition(width / 2, height * 0.38).setScale(scaleFactor * 1.8);
 
     // Play Button
     if (!this.playBtn) {

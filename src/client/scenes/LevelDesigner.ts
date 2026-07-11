@@ -6,7 +6,7 @@ type BrushType = 'water' | 'red_start' | 'blue_start' | 'red_dest' | 'blue_dest'
   | 'tile_top_left' | 'tile_top_mid' | 'tile_top_right'
   | 'tile_mid_left' | 'tile_middle' | 'tile_mid_right'
   | 'tile_bot_left' | 'tile_bot_mid' | 'tile_bot_right'
-  | 'obs_bush1' | 'obs_pumpkin1' | 'obs_pumpkin2' | 'obs_rock' | 'enemy_barrel' | 'eraser'
+  | 'obs_bush1' | 'obs_pumpkin1' | 'obs_pumpkin2' | 'obs_rock' | 'obs_box' | 'obs_rock3' | 'enemy_barrel' | 'eraser'
   | 'fence_left_bottom' | 'fence_left_connected_mid_open' | 'fence_left_middle' 
   | 'fence_right_bottom' | 'fence_right_connect_mid_open' | 'fence_right_middle'
   | 'fence_top_left' | 'fence_top_middle_one' | 'fence_top_middle_two' | 'fence_top_right'
@@ -52,8 +52,9 @@ export class LevelDesigner extends Scene {
 
   gridContainer!: GameObjects.Container;
   uiContainer!: GameObjects.Container;
-  brushText!: GameObjects.Text;
+
   publishBtn!: GameObjects.Container;
+  backBtn!: GameObjects.Container;
   
   jsonOutput: HTMLTextAreaElement | null = null;
   
@@ -151,7 +152,7 @@ export class LevelDesigner extends Scene {
   }
 
   create() {
-    this.cameras.main.setBackgroundColor(0x222222);
+    this.cameras.main.setBackgroundColor(0x47aba9);
 
     // Initialize map if not loaded from baseMap
     const isMapEmpty = this.mapData.length === 0;
@@ -178,9 +179,9 @@ export class LevelDesigner extends Scene {
     this.createPalette();
     
     // Add Back Button
-    const backBtn = this.add.container(20, 20);
-    const backImg = this.add.nineslice(0, 0, 'menu_btn', undefined, 140, 50, 32, 32, 32, 32, true, true).setOrigin(0, 0).setInteractive({ useHandCursor: true });
-    const backText = this.add.text(70, 25, '⬅ Back', {
+    this.backBtn = this.add.container(this.scale.width - 20, 100);
+    const backImg = this.add.nineslice(0, 0, 'menu_btn', undefined, 140, 50, 32, 32, 32, 32, true, true).setOrigin(1, 0).setInteractive({ useHandCursor: true });
+    const backText = this.add.text(-70, 25, '⬅ Back', {
       fontFamily: 'Patrick Hand', fontSize: '18px', color: '#ffffff', stroke: '#000000', strokeThickness: 4
     }).setOrigin(0.5);
     
@@ -188,18 +189,18 @@ export class LevelDesigner extends Scene {
     backImg.on('pointerup', () => { backImg.setTexture('menu_btn'); backText.setY(25); this.scene.start('MainMenu'); });
     backImg.on('pointerout', () => { backImg.setTexture('menu_btn'); backText.setY(25); });
     
-    backBtn.add([backImg, backText]);
+    this.backBtn.add([backImg, backText]);
 
     // Publish button
     this.publishBtn = this.add.container(this.scale.width - 20, 20);
-    const pubImg = this.add.nineslice(0, 0, 'menu_btn', undefined, 240, 50, 32, 32, 32, 32, true, true).setOrigin(1, 0).setInteractive({ useHandCursor: true });
-    const pubText = this.add.text(-120, 25, 'Publish to Reddit', {
+    const pubImg = this.add.nineslice(0, 0, 'menu_btn', undefined, 240, 70, 32, 32, 32, 32, true, true).setOrigin(1, 0).setInteractive({ useHandCursor: true });
+    const pubText = this.add.text(-120, 35, 'Publish to Reddit', {
       fontFamily: 'Patrick Hand', fontSize: '18px', color: '#ffffff', stroke: '#000000', strokeThickness: 4
     }).setOrigin(0.5);
 
-    pubImg.on('pointerdown', () => { pubImg.setTexture('menu_btn_pressed'); pubText.setY(29); });
-    pubImg.on('pointerup', () => { pubImg.setTexture('menu_btn'); pubText.setY(25); this.showPublishPrompt(this.generateMapJSON()); });
-    pubImg.on('pointerout', () => { pubImg.setTexture('menu_btn'); pubText.setY(25); });
+    pubImg.on('pointerdown', () => { pubImg.setTexture('menu_btn_pressed'); pubText.setY(39); });
+    pubImg.on('pointerup', () => { pubImg.setTexture('menu_btn'); pubText.setY(35); this.showPublishPrompt(this.generateMapJSON()); });
+    pubImg.on('pointerout', () => { pubImg.setTexture('menu_btn'); pubText.setY(35); });
 
     this.publishBtn.add([pubImg, pubText]);
       
@@ -207,10 +208,9 @@ export class LevelDesigner extends Scene {
     this.jsonOutput = document.createElement('textarea');
     this.jsonOutput.style.position = 'absolute';
     this.jsonOutput.style.bottom = '10px';
-    this.jsonOutput.style.left = '50%';
-    this.jsonOutput.style.transform = 'translateX(-50%)';
-    this.jsonOutput.style.width = '60%';
-    this.jsonOutput.style.height = '100px';
+    this.jsonOutput.style.right = '10px';
+    this.jsonOutput.style.width = '50px';
+    this.jsonOutput.style.height = '50px';
     this.jsonOutput.style.zIndex = '1000';
     this.jsonOutput.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
     this.jsonOutput.style.color = '#47aba9';
@@ -461,109 +461,133 @@ export class LevelDesigner extends Scene {
   }
 
   createPalette() {
-    const bg = this.add.rectangle(0, 0, 320, 710, 0x333333).setOrigin(0.5);
+    const bg = this.add.nineslice(0, 0, 'special_paper', undefined, 440, 710, 64, 64, 64, 64, true, true).setOrigin(0.5);
     this.uiContainer.add(bg);
 
-    this.brushText = this.add.text(0, 310, 'Current Brush:\nGrass (Middle)', { fontSize: '20px', align: 'center' }).setOrigin(0.5);
-    this.uiContainer.add(this.brushText);
 
-    const allBrushes: { type: BrushType, label: string, emoji?: string, texture?: string }[] = [
-      // Row 1 & 2: Main Tools
-      { type: 'water', label: 'Water', texture: 'water_tiles' },
-      { type: 'red_start', label: 'Red Start', texture: 'redknight' },
-      { type: 'blue_start', label: 'Blue Start', texture: 'blueknight' },
-      { type: 'eraser', label: 'Eraser', emoji: '🧼' },
-      { type: 'red_dest', label: 'Red Dest', texture: 'btn_red' },
-      { type: 'blue_dest', label: 'Blue Dest', texture: 'btn_blue' },
-      // Row 3, 4, 5: Ground
-      { type: 'tile_top_left', label: 'Top Left Edge' },
-      { type: 'tile_top_mid', label: 'Top Mid Edge' },
-      { type: 'tile_top_right', label: 'Top Right Edge' },
-      { type: 'tile_mid_left', label: 'Mid Left Edge' },
-      { type: 'tile_middle', label: 'Middle' },
-      { type: 'tile_mid_right', label: 'Mid Right Edge' },
-      { type: 'tile_bot_left', label: 'Bot Left Edge' },
-      { type: 'tile_bot_mid', label: 'Bot Mid Edge' },
-      { type: 'tile_bot_right', label: 'Bot Right Edge' },
-      // Row 6, 7: Obstacles
-      { type: 'obs_bush1', label: 'Bush' },
-      { type: 'obs_pumpkin1', label: 'Pumpkin 1' },
-      { type: 'obs_pumpkin2', label: 'Pumpkin 2' },
-      { type: 'obs_rock', label: 'Rock' },
-      { type: 'enemy_barrel', label: 'Enemy Barrel' },
-      // Row 7, 8, 9: Fences
-      { type: 'fence_left_bottom', label: 'Fence LB' },
-      { type: 'fence_left_connected_mid_open', label: 'Fence L Conn' },
-      { type: 'fence_left_middle', label: 'Fence LM' },
-      { type: 'fence_right_bottom', label: 'Fence RB' },
-      { type: 'fence_right_connect_mid_open', label: 'Fence R Conn' },
-      { type: 'fence_right_middle', label: 'Fence RM' },
-      { type: 'fence_top_left', label: 'Fence TL' },
-      { type: 'fence_top_middle_one', label: 'Fence TM1' },
-      { type: 'fence_top_middle_two', label: 'Fence TM2' },
-      { type: 'fence_top_right', label: 'Fence TR' },
-      // Row 10: Cliffs
-      { type: 'cliff_left_edge', label: 'Cliff L' },
-      { type: 'cliff_middle_edge', label: 'Cliff M' },
-      { type: 'cliff_right_edge', label: 'Cliff R' },
-      // Row 11: Cliff Grounds (Top)
-      { type: 'cliff_ground_top_left', label: 'C-Gnd TL' },
-      { type: 'cliff_ground_top_mid', label: 'C-Gnd TM' },
-      { type: 'cliff_ground_top_right', label: 'C-Gnd TR' },
-      // Row 12: Cliff Grounds (Mid)
-      { type: 'cliff_ground_mid_left', label: 'C-Gnd ML' },
-      { type: 'cliff_ground_middle', label: 'C-Gnd M' },
-      { type: 'cliff_ground_mid_right', label: 'C-Gnd MR' },
-      // Row 13: Cliff Grounds (Bot)
-      { type: 'cliff_ground_bottom_left', label: 'C-Gnd BL' },
-      { type: 'cliff_ground_bottom_mid', label: 'C-Gnd BM' },
-      { type: 'cliff_ground_bottom_right', label: 'C-Gnd BR' }
+    const brushSections: { name: string, brushes: { type: BrushType, label: string, emoji?: string, texture?: string }[] }[] = [
+      {
+        name: 'Characters',
+        brushes: [
+          { type: 'red_start', label: 'Red Start', texture: 'redknight' },
+          { type: 'blue_start', label: 'Blue Start', texture: 'blueknight' },
+          { type: 'red_dest', label: 'Red Dest', texture: 'btn_red' },
+          { type: 'blue_dest', label: 'Blue Dest', texture: 'btn_blue' }
+        ]
+      },
+      {
+        name: 'Blocks',
+        brushes: [
+          { type: 'obs_bush1', label: 'Bush' },
+          { type: 'obs_pumpkin1', label: 'Pumpkin 1' },
+          { type: 'obs_pumpkin2', label: 'Pumpkin 2' },
+          { type: 'obs_rock', label: 'Rock' },
+          { type: 'obs_box', label: 'Box' },
+          { type: 'obs_rock3', label: 'Rock 3' }
+        ]
+      },
+      {
+        name: 'Enemy',
+        brushes: [
+          { type: 'enemy_barrel', label: 'Enemy Barrel' }
+        ]
+      },
+      {
+        name: 'Other',
+        brushes: [
+          { type: 'water', label: 'Water', texture: 'water_tiles' },
+          { type: 'eraser', label: 'Eraser', emoji: '🧼' }
+        ]
+      },
+      {
+        name: 'Fence',
+        brushes: [
+          { type: 'fence_left_bottom', label: 'Fence LB' },
+          { type: 'fence_left_connected_mid_open', label: 'Fence L Conn' },
+          { type: 'fence_left_middle', label: 'Fence LM' },
+          { type: 'fence_right_bottom', label: 'Fence RB' },
+          { type: 'fence_right_connect_mid_open', label: 'Fence R Conn' },
+          { type: 'fence_right_middle', label: 'Fence RM' },
+          { type: 'fence_top_left', label: 'Fence TL' },
+          { type: 'fence_top_middle_one', label: 'Fence TM1' },
+          { type: 'fence_top_middle_two', label: 'Fence TM2' },
+          { type: 'fence_top_right', label: 'Fence TR' }
+        ]
+      },
+      {
+        name: 'Ground',
+        brushes: [
+          { type: 'cliff_left_edge', label: 'Cliff L' },
+          { type: 'cliff_middle_edge', label: 'Cliff M' },
+          { type: 'cliff_right_edge', label: 'Cliff R' },
+          { type: 'cliff_ground_top_left', label: 'C-Gnd TL' },
+          { type: 'cliff_ground_top_mid', label: 'C-Gnd TM' },
+          { type: 'cliff_ground_top_right', label: 'C-Gnd TR' },
+          { type: 'cliff_ground_mid_left', label: 'C-Gnd ML' },
+          { type: 'cliff_ground_middle', label: 'C-Gnd M' },
+          { type: 'cliff_ground_mid_right', label: 'C-Gnd MR' },
+          { type: 'cliff_ground_bottom_left', label: 'C-Gnd BL' },
+          { type: 'cliff_ground_bottom_mid', label: 'C-Gnd BM' },
+          { type: 'cliff_ground_bottom_right', label: 'C-Gnd BR' }
+        ]
+      }
     ];
 
-    const cols = 5;
-    const padding = 60;
+    const cols = 7;
+    const padding = 55;
     const startX = -((cols - 1) * padding) / 2;
-    const startY = -270;
+    let currentY = -320;
 
-    allBrushes.forEach((brush, index) => {
-      const col = index % cols;
-      const row = Math.floor(index / cols);
-      
-      const x = startX + (col * padding);
-      const y = startY + (row * padding);
+    brushSections.forEach(section => {
+      const title = this.add.text(-200, currentY, section.name, { fontSize: '16px', color: '#ffcc00', fontFamily: 'Patrick Hand' }).setOrigin(0, 0.5);
+      this.uiContainer.add(title);
+      currentY += 25;
 
-      if (brush.emoji) {
-        const txt = this.add.text(x, y, brush.emoji, { fontSize: '32px' }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+      section.brushes.forEach((brush, index) => {
+        const col = index % cols;
+        const row = Math.floor(index / cols);
         
-        txt.on('pointerdown', () => {
-          this.currentBrush = brush.type;
-          this.brushText.setText(`Current Brush:\n${brush.label}`);
-        });
-        
-        this.uiContainer.add(txt);
-      } else {
-        const tex = brush.texture || brush.type;
-        let img;
-        if (tex === 'enemy_barrel') {
-          img = this.add.sprite(x, y, tex).setInteractive({ useHandCursor: true });
-          img.play('anim_barrel');
+        const x = startX + (col * padding);
+        const y = currentY + (row * padding);
+
+        if (brush.emoji) {
+          const txt = this.add.text(x, y, brush.emoji, { fontSize: '32px' }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+          
+          txt.on('pointerdown', () => {
+            this.currentBrush = brush.type;
+          });
+          
+          this.uiContainer.add(txt);
         } else {
-          img = this.add.image(x, y, tex).setInteractive({ useHandCursor: true });
+          const tex = brush.texture || brush.type;
+          let img;
+          if (tex === 'enemy_barrel') {
+            img = this.add.sprite(x, y, tex).setInteractive({ useHandCursor: true });
+            img.play('anim_barrel');
+          } else {
+            img = this.add.image(x, y, tex).setInteractive({ useHandCursor: true });
+          }
+          
+          // Scale down if it's too big
+          let maxSize = 45;
+          if (tex === 'redknight' || tex === 'blueknight') {
+            maxSize = 85;
+          }
+          if (img.width > maxSize || img.height > maxSize) {
+            const scale = maxSize / Math.max(img.width, img.height);
+            img.setScale(scale);
+          }
+          
+          img.on('pointerdown', () => {
+            this.currentBrush = brush.type;
+          });
+          
+          this.uiContainer.add(img);
         }
-        
-        // Scale down if it's too big (padding is 60, so 48 is a good max size)
-        if (img.width > 48 || img.height > 48) {
-          const scale = 48 / Math.max(img.width, img.height);
-          img.setScale(scale);
-        }
-        
-        img.on('pointerdown', () => {
-          this.currentBrush = brush.type;
-          this.brushText.setText(`Current Brush:\n${brush.label}`);
-        });
-        
-        this.uiContainer.add(img);
-      }
+      });
+
+      const numRows = Math.ceil(section.brushes.length / cols);
+      currentY += (numRows * padding) - 5;
     });
   }
 
@@ -878,12 +902,13 @@ export class LevelDesigner extends Scene {
   updateLayout(width: number, height: number) {
     this.cameras.resize(width, height);
     this.publishBtn.setPosition(width - 20, 20);
+    if (this.backBtn) this.backBtn.setPosition(width - 20, 100);
 
     const totalGridWidth = this.gridWidth * this.cellSize;
     const totalGridHeight = this.gridHeight * this.cellSize;
     
-    // Left sidebar is ~320px wide. Right side is for the grid.
-    const sidebarWidth = Math.min(320, width * 0.4);
+    // Left sidebar is ~440px wide. Right side is for the grid.
+    const sidebarWidth = Math.min(440, width * 0.4);
     const availableGridWidth = width - sidebarWidth;
     
     const scaleFactor = Math.min(availableGridWidth / (totalGridWidth + 40), height / (totalGridHeight + 100), 1);
@@ -900,7 +925,7 @@ export class LevelDesigner extends Scene {
 
     // Sidebar UI on the left
     this.uiContainer.setPosition(sidebarWidth / 2, height / 2);
-    const uiScale = Math.min(1, height / 750);
+    const uiScale = Math.min(1, height / 750, sidebarWidth / 440);
     this.uiContainer.setScale(uiScale);
   }
 }

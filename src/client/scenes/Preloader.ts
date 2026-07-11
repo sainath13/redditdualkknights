@@ -29,7 +29,7 @@ export class Preloader extends Scene {
     //  Load the assets for the game
     this.load.setPath('../assets');
 
-    this.load.image('logo', 'logo.png');
+    this.load.image('logo', 'logonew.png');
     
     // Knights assets
     this.load.spritesheet('redknight', 'knights/red_knight_Idle.png', { frameWidth: 192, frameHeight: 192 });
@@ -60,6 +60,8 @@ export class Preloader extends Scene {
     this.load.image('obs_pumpkin1', 'obstacles/pumpkin1.png');
     this.load.image('obs_pumpkin2', 'obstacles/pumpkin2.png');
     this.load.image('obs_rock', 'obstacles/rock.png');
+    this.load.image('obs_box', 'obstacles/box.png');
+    this.load.image('obs_rock3', 'obstacles/rock3.png');
     // Enemies
     this.load.spritesheet('enemy_barrel', 'enemy/animating_barrel.png', { frameWidth: 86, frameHeight: 86 });
     this.load.spritesheet('explosion', 'enemy/animating_explosion_dead.png', { frameWidth: 128, frameHeight: 128 });
@@ -105,6 +107,7 @@ export class Preloader extends Scene {
     this.load.image('menu_btn_pressed', 'woodentable/bluebuttonPressed.png');
     this.load.image('banner_slots', 'woodentable/Banner_Slots.png');
     this.load.image('banner_ribbon', 'woodentable/redheadingribbon.png');
+    this.load.image('special_paper', 'woodentable/specialpaper.png');
     this.load.image('btn_steps', 'other_buttons/steps_button.png');
     this.load.image('btn_steps_pressed', 'other_buttons/steps_button_pressed.png');
     this.load.image('btn_replay', 'other_buttons/replay_button.png');
