@@ -37,6 +37,7 @@ export class Game extends Scene {
   selectedKnight: 'red' | 'blue' = 'red';
   selectBtnContainer!: Phaser.GameObjects.Container;
   selectKnightSprite!: Phaser.GameObjects.Sprite;
+  cannotMoveText?: Phaser.GameObjects.Text;
   
   // Zoom & Pan state
   defaultScale = 1;
@@ -101,6 +102,7 @@ export class Game extends Scene {
         this.createControls();
 
         this.updateLayout(this.scale.width, this.scale.height);
+        this.showRulesPopup();
       })
       .catch(err => {
         console.error('Error fetching /api/init:', err);
@@ -109,6 +111,7 @@ export class Game extends Scene {
         this.createKnights();
         this.createControls();
         this.updateLayout(this.scale.width, this.scale.height);
+        this.showRulesPopup();
       });
 
     this.scale.on('resize', (gameSize: Phaser.Structs.Size) => {
@@ -566,6 +569,30 @@ export class Game extends Scene {
 
       this.updateKnightPositions(true);
       this.checkWinCondition();
+    } else {
+      if (!this.cannotMoveText || !this.cannotMoveText.active) {
+        this.cannotMoveText = this.add.text(this.scale.width / 2, this.scale.height / 2 - 50, "Cannot move in that direction", {
+          fontFamily: 'Patrick Hand',
+          fontSize: '28px',
+          color: '#000000',
+          stroke: '#ffffff',
+          strokeThickness: 4,
+          align: 'center'
+        }).setOrigin(0.5).setDepth(9999);
+
+        this.tweens.add({
+          targets: this.cannotMoveText,
+          alpha: 0,
+          delay: 1500,
+          duration: 500,
+          onComplete: () => {
+            if (this.cannotMoveText) {
+              this.cannotMoveText.destroy();
+              delete this.cannotMoveText;
+            }
+          }
+        });
+      }
     }
   }
 
@@ -845,6 +872,61 @@ export class Game extends Scene {
   }
 
 
+
+  showRulesPopup() {
+    const popup = this.add.container(this.scale.width / 2, this.scale.height / 2).setDepth(9999);
+    
+    const bg = this.add.image(0, 0, 'popup_bg');
+    bg.setDisplaySize(500, 360);
+    
+    const msg = "* Knights move in opposite directions\n* Red Knight and Blue knight must reach their destinations simultenously to complete the level\n* Knights cannot collide with barells and each other.";
+    
+    const text = this.add.text(0, -30, msg, {
+      fontFamily: 'Patrick Hand',
+      fontSize: '24px',
+      color: '#693d5b',
+      align: 'left',
+      wordWrap: { width: 440, useAdvancedWrap: true }
+    }).setOrigin(0.5);
+
+    const bannerWidth = Math.max(128, text.width + 60);
+    const bannerHeight = Math.max(128, text.height + 60);
+    const banner = this.add.nineslice(0, -30, 'banner_slots', undefined, bannerWidth, bannerHeight, 64, 64, 64, 64, true, true).setOrigin(0.5);
+
+    const okBtn = this.add.container(0, 110);
+    const okImg = this.add.nineslice(0, 0, 'menu_btn', undefined, 140, 50, 32, 32, 32, 32, true, true).setInteractive({ useHandCursor: true });
+    
+    const okText = this.add.text(0, -4, 'Okay', {
+      fontFamily: 'Patrick Hand',
+      fontSize: '20px',
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 4
+    }).setOrigin(0.5);
+
+    okImg.on('pointerdown', () => {
+      okImg.setTexture('menu_btn_pressed');
+      okText.setY(0);
+    });
+    okImg.on('pointerup', () => {
+      okImg.setTexture('menu_btn');
+      okText.setY(-4);
+      popup.destroy();
+    });
+    okImg.on('pointerout', () => {
+      okImg.setTexture('menu_btn');
+      okText.setY(-4);
+    });
+
+    okBtn.add([okImg, okText]);
+    popup.add([bg, banner, text, okBtn]);
+    
+    let scaleFactor = Math.min(this.scale.width / 1024, this.scale.height / 768, 1.5);
+    if (this.scale.width < 800) {
+      scaleFactor = this.scale.width / 550; 
+    }
+    popup.setScale(scaleFactor);
+  }
 
   showPopup(msg: string) {
     // A simple text popup
