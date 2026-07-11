@@ -27,3 +27,7 @@ function init() {
 }
 
 init();
+
+document.body.addEventListener('mousedown', () => document.body.classList.add('clicking'));
+document.body.addEventListener('mouseup', () => document.body.classList.remove('clicking'));
+document.body.addEventListener('mouseleave', () => document.body.classList.remove('clicking'));
