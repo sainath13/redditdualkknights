@@ -34,6 +34,8 @@ export class Game extends Scene {
   controlsContainer!: Phaser.GameObjects.Container;
   hudContainer!: Phaser.GameObjects.Container;
   gameOver = false;
+  showGrid = false;
+  gridGraphics!: Phaser.GameObjects.Graphics;
   selectedKnight: 'red' | 'blue' = 'red';
   selectBtnContainer!: Phaser.GameObjects.Container;
   selectKnightSprite!: Phaser.GameObjects.Sprite;
@@ -324,6 +326,21 @@ export class Game extends Scene {
     );
     this.blueDestination.setDisplaySize(this.cellSize * 0.8, this.cellSize * 0.8);
     this.gridContainer.add(this.blueDestination);
+
+    this.gridGraphics = this.add.graphics();
+    this.gridGraphics.lineStyle(2, 0xffffff, 0.3);
+    for (let i = 0; i <= this.gridWidth; i++) {
+      this.gridGraphics.moveTo(i * this.cellSize, 0);
+      this.gridGraphics.lineTo(i * this.cellSize, this.gridHeight * this.cellSize);
+    }
+    for (let j = 0; j <= this.gridHeight; j++) {
+      this.gridGraphics.moveTo(0, j * this.cellSize);
+      this.gridGraphics.lineTo(this.gridWidth * this.cellSize, j * this.cellSize);
+    }
+    this.gridGraphics.strokePath();
+    this.gridGraphics.setDepth(5);
+    this.gridGraphics.setVisible(this.showGrid);
+    this.gridContainer.add(this.gridGraphics);
   }
 
   createKnights() {
@@ -418,12 +435,22 @@ export class Game extends Scene {
     createBtn(0, 55, 'arrow_down', 0, 1);
     
     // HUD Buttons on the right side of screen (hudContainer)
-    // 2x2 Grid Layout
+    // Cross Layout around Step Count
     const btnScale = 45;
-    const offset = 30;
+    const offset = 50;
 
-    // Relocate Button (Top Left)
-    const resetBtn = this.add.image(-offset, -offset, 'center_btn').setOrigin(0.5).setInteractive({ useHandCursor: true });
+    // Step Count (Center)
+    const stepsBg = this.add.image(0, 0, 'btn_steps').setOrigin(0.5);
+    stepsBg.setDisplaySize(btnScale, btnScale);
+    this.stepText = this.add.text(0, 0, '0', {
+      fontFamily: 'Patrick Hand',
+      fontSize: '24px',
+      color: '#333333',
+      fontStyle: 'bold'
+    }).setOrigin(0.5);
+
+    // Relocate Button (Top)
+    const resetBtn = this.add.image(0, -offset, 'center_btn').setOrigin(0.5).setInteractive({ useHandCursor: true });
     resetBtn.setDisplaySize(btnScale, btnScale);
     resetBtn.on('pointerdown', () => {
       resetBtn.setTexture('center_btn_pressed');
@@ -432,18 +459,8 @@ export class Game extends Scene {
     resetBtn.on('pointerup', () => resetBtn.setTexture('center_btn'));
     resetBtn.on('pointerout', () => resetBtn.setTexture('center_btn'));
 
-    // Step Count (Top Right)
-    const stepsBg = this.add.image(offset, -offset, 'btn_steps').setOrigin(0.5);
-    stepsBg.setDisplaySize(btnScale, btnScale);
-    this.stepText = this.add.text(offset, -offset, '0', {
-      fontFamily: 'Patrick Hand',
-      fontSize: '24px',
-      color: '#333333',
-      fontStyle: 'bold'
-    }).setOrigin(0.5);
-
-    // Replay Button (Bottom Left)
-    const replayBtn = this.add.image(-offset, offset, 'btn_replay').setOrigin(0.5).setInteractive({ useHandCursor: true });
+    // Replay Button (Left)
+    const replayBtn = this.add.image(-offset, 0, 'btn_replay').setOrigin(0.5).setInteractive({ useHandCursor: true });
     replayBtn.setDisplaySize(btnScale, btnScale);
     replayBtn.on('pointerdown', () => {
       replayBtn.setTexture('btn_replay_pressed');
@@ -452,8 +469,8 @@ export class Game extends Scene {
     replayBtn.on('pointerup', () => replayBtn.setTexture('btn_replay'));
     replayBtn.on('pointerout', () => replayBtn.setTexture('btn_replay'));
 
-    // Menu / Close Button (Bottom Right)
-    const closeBtn = this.add.image(offset, offset, 'btn_close').setOrigin(0.5).setInteractive({ useHandCursor: true });
+    // Menu / Close Button (Right)
+    const closeBtn = this.add.image(offset, 0, 'btn_close').setOrigin(0.5).setInteractive({ useHandCursor: true });
     closeBtn.setDisplaySize(btnScale, btnScale);
     closeBtn.on('pointerdown', () => {
       closeBtn.setTexture('btn_close_pressed');
@@ -462,7 +479,18 @@ export class Game extends Scene {
     closeBtn.on('pointerup', () => closeBtn.setTexture('btn_close'));
     closeBtn.on('pointerout', () => closeBtn.setTexture('btn_close'));
 
-    this.hudContainer.add([replayBtn, resetBtn, stepsBg, this.stepText, closeBtn]);
+    // Grid Toggle Button (Bottom)
+    const gridBtn = this.add.image(0, offset, 'btn_grid').setOrigin(0.5).setInteractive({ useHandCursor: true });
+    gridBtn.setDisplaySize(btnScale, btnScale);
+    gridBtn.on('pointerdown', () => {
+      gridBtn.setTexture('btn_grid_pressed');
+      this.showGrid = !this.showGrid;
+      if (this.gridGraphics) this.gridGraphics.setVisible(this.showGrid);
+    });
+    gridBtn.on('pointerup', () => gridBtn.setTexture('btn_grid'));
+    gridBtn.on('pointerout', () => gridBtn.setTexture('btn_grid'));
+
+    this.hudContainer.add([replayBtn, resetBtn, stepsBg, this.stepText, closeBtn, gridBtn]);
   }
 
   updateLayout(width: number, height: number) {
