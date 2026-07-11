@@ -2,6 +2,18 @@ import { Scene, GameObjects } from 'phaser';
 import { navigateTo } from '@devvit/web/client';
 import * as Phaser from 'phaser';
 
+interface MapLayer {
+  name: string;
+  data?: number[];
+  objects?: { x?: number; y?: number; name: string }[];
+}
+
+interface MapJson {
+  width?: number;
+  height?: number;
+  layers?: MapLayer[];
+}
+
 type BrushType = 'water' | 'red_start' | 'blue_start' | 'red_dest' | 'blue_dest'
   | 'tile_top_left' | 'tile_top_mid' | 'tile_top_right'
   | 'tile_mid_left' | 'tile_middle' | 'tile_mid_right'
@@ -68,7 +80,7 @@ export class LevelDesigner extends Scene {
     super('LevelDesigner');
   }
 
-  init(data?: { baseMap?: any, gridWidth?: number, gridHeight?: number }) {
+  init(data?: { baseMap?: MapJson, gridWidth?: number, gridHeight?: number }) {
     // Clear old state across restarts
     this.mapData = [];
     this.obstacles = [];
@@ -96,7 +108,7 @@ export class LevelDesigner extends Scene {
     }
   }
 
-  parseBaseMap(mapJson: any) {
+  parseBaseMap(mapJson: MapJson) {
     this.gridWidth = mapJson.width || 6;
     this.gridHeight = mapJson.height || 8;
     
@@ -109,18 +121,18 @@ export class LevelDesigner extends Scene {
     }
     
     if (mapJson.layers) {
-      mapJson.layers.forEach((layer: any) => {
+      mapJson.layers.forEach(layer => {
         if (layer.name === 'ground' && layer.data) {
           for (let i = 0; i < layer.data.length; i++) {
             const x = i % this.gridWidth;
             const y = Math.floor(i / this.gridWidth);
             if (this.mapData[y]) {
-              this.mapData[y]![x] = layer.data[i];
+              this.mapData[y]![x] = layer.data[i] || 0;
             }
           }
         }
         else if (layer.name === 'spawn_points' && layer.objects) {
-          layer.objects.forEach((obj: any) => {
+          layer.objects.forEach(obj => {
             const gx = Math.floor((obj.x || 0) / this.cellSize);
             const gy = Math.floor((obj.y || 0) / this.cellSize);
             if (obj.name === 'red_start') this.redStart = { x: gx, y: gy };
@@ -130,21 +142,21 @@ export class LevelDesigner extends Scene {
           });
         }
         else if (layer.name === 'obstacles' && layer.objects) {
-          layer.objects.forEach((obj: any) => {
+          layer.objects.forEach(obj => {
             const gx = Math.floor((obj.x || 0) / this.cellSize);
             const gy = Math.floor((obj.y || 0) / this.cellSize);
             this.obstacles.push({ type: obj.name, x: gx, y: gy });
           });
         }
         else if (layer.name === 'enemies' && layer.objects) {
-          layer.objects.forEach((obj: any) => {
+          layer.objects.forEach(obj => {
             const gx = Math.floor((obj.x || 0) / this.cellSize);
             const gy = Math.floor((obj.y || 0) / this.cellSize);
             this.enemies.push({ type: obj.name, x: gx, y: gy });
           });
         }
         else if (layer.name === 'cliff_grounds' && layer.objects) {
-          layer.objects.forEach((obj: any) => {
+          layer.objects.forEach(obj => {
             const gx = Math.floor((obj.x || 0) / this.cellSize);
             const gy = Math.floor((obj.y || 0) / this.cellSize);
             this.cliffGrounds.push({ type: obj.name, x: gx, y: gy });
@@ -489,7 +501,7 @@ export class LevelDesigner extends Scene {
     if (this.entitySprites['blue_dest']) this.gridContainer.bringToTop(this.entitySprites['blue_dest']);
     if (this.entitySprites['red_start']) this.gridContainer.bringToTop(this.entitySprites['red_start']);
     if (this.entitySprites['blue_start']) this.gridContainer.bringToTop(this.entitySprites['blue_start']);
-    
+    if (this.gridGraphics) this.gridContainer.bringToTop(this.gridGraphics);
     if (this.jsonOutput) {
       this.jsonOutput.value = this.generateMapJSON();
     }

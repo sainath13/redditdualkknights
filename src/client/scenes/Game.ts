@@ -368,6 +368,30 @@ export class Game extends Scene {
       frameRate: 15,
       repeat: -1
     });
+    this.anims.create({
+      key: 'red_up',
+      frames: this.anims.generateFrameNumbers('redknight_up', { start: 0, end: 5 }),
+      frameRate: 15,
+      repeat: -1
+    });
+    this.anims.create({
+      key: 'red_down',
+      frames: this.anims.generateFrameNumbers('redknight_down', { start: 0, end: 5 }),
+      frameRate: 15,
+      repeat: -1
+    });
+    this.anims.create({
+      key: 'blue_up',
+      frames: this.anims.generateFrameNumbers('blueknight_up', { start: 0, end: 5 }),
+      frameRate: 15,
+      repeat: -1
+    });
+    this.anims.create({
+      key: 'blue_down',
+      frames: this.anims.generateFrameNumbers('blueknight_down', { start: 0, end: 5 }),
+      frameRate: 15,
+      repeat: -1
+    });
 
     this.redKnight = this.add.sprite(0, 0, 'redknight');
     this.blueKnight = this.add.sprite(0, 0, 'blueknight');
@@ -667,13 +691,21 @@ export class Game extends Scene {
         const isMovingY = targetY !== knight.y;
         
         if (isMovingX || isMovingY) {
-          knight.play(`${color}_run`);
+          if (isMovingX) {
+            knight.play(`${color}_run`);
+          } else if (isMovingY) {
+            if (targetY < knight.y) {
+              knight.play(`${color}_up`);
+            } else {
+              knight.play(`${color}_down`);
+            }
+          }
           
           this.tweens.add({
             targets: knight,
             x: targetX, y: targetY,
-            duration: 300,
-            ease: 'Power2',
+            duration: 400,
+            ease: 'Linear',
             onComplete: () => {
               knight.play(`${color}_idle`);
 
@@ -805,7 +837,11 @@ export class Game extends Scene {
       for (let i = 0; i < 7; i++) {
         const entry = (lbData.scores && i < lbData.scores.length) ? lbData.scores[i] : null;
         if (entry) {
-          lbString += `${i + 1}. ${entry.member} - ${entry.score} steps\n`;
+          let memberName = entry.member;
+          if (memberName.length > 12) {
+            memberName = memberName.substring(0, 12) + '..';
+          }
+          lbString += `${i + 1}. ${memberName} - ${entry.score} steps\n`;
         } else {
           lbString += `${i + 1}. ---\n`;
         }

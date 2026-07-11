@@ -23,7 +23,7 @@ async function fetchStats() {
 }
 
 function init() {
-  fetchStats();
+  void fetchStats();
 }
 
 init();

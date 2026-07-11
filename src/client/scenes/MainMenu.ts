@@ -181,7 +181,7 @@ export class MainMenu extends Scene {
       bases = this.cache.json.get('baselevelmanifest') || [];
       // Fallback for old string arrays
       if (bases.length > 0 && typeof bases[0] === 'string') {
-        bases = (bases as any).map((b: string) => ({ file: b, name: b }));
+        bases = (bases as unknown as string[]).map((b: string) => ({ file: b, name: b }));
       }
     } catch (e) {
       console.error(e);
