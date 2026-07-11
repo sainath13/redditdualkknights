@@ -331,9 +331,21 @@ export class Game extends Scene {
       repeat: -1
     });
     this.anims.create({
+      key: 'red_run',
+      frames: this.anims.generateFrameNumbers('redknight_run', { start: 0, end: 5 }),
+      frameRate: 15,
+      repeat: -1
+    });
+    this.anims.create({
       key: 'blue_idle',
       frames: this.anims.generateFrameNumbers('blueknight', { start: 0, end: 7 }),
       frameRate: 10,
+      repeat: -1
+    });
+    this.anims.create({
+      key: 'blue_run',
+      frames: this.anims.generateFrameNumbers('blueknight_run', { start: 0, end: 5 }),
+      frameRate: 15,
       repeat: -1
     });
 
@@ -548,7 +560,7 @@ export class Game extends Scene {
           };
           this.playExplosion(this.redPos.x, this.redPos.y, onComplete);
           this.playExplosion(this.bluePos.x, this.bluePos.y, onComplete);
-        }, 150);
+        }, 300);
         return;
       }
 
@@ -587,18 +599,38 @@ export class Game extends Scene {
     const by = (this.bluePos.y) * this.cellSize + this.cellSize / 2 - 8;
 
     if (animate) {
-      this.tweens.add({
-        targets: this.redKnight,
-        x: rx, y: ry,
-        duration: 150,
-        ease: 'Power2'
-      });
-      this.tweens.add({
-        targets: this.blueKnight,
-        x: bx, y: by,
-        duration: 150,
-        ease: 'Power2'
-      });
+      const moveKnight = (knight: Phaser.GameObjects.Sprite, targetX: number, targetY: number, color: 'red' | 'blue') => {
+        const isMovingX = targetX !== knight.x;
+        const isMovingY = targetY !== knight.y;
+        
+        if (isMovingX || isMovingY) {
+          knight.play(`${color}_run`);
+          
+          if (targetX < knight.x) {
+            knight.setFlipX(true);
+          } else if (targetX > knight.x) {
+            knight.setFlipX(false);
+          }
+          
+          this.tweens.add({
+            targets: knight,
+            x: targetX, y: targetY,
+            duration: 300,
+            ease: 'Power2',
+            onComplete: () => {
+              knight.play(`${color}_idle`);
+              if (color === 'red') {
+                knight.setFlipX(false);
+              } else {
+                knight.setFlipX(true);
+              }
+            }
+          });
+        }
+      };
+
+      moveKnight(this.redKnight, rx, ry, 'red');
+      moveKnight(this.blueKnight, bx, by, 'blue');
     } else {
       this.redKnight.setPosition(rx, ry);
       this.blueKnight.setPosition(bx, by);
@@ -614,7 +646,7 @@ export class Game extends Scene {
         this.playExplosion(this.redPos.x, this.redPos.y, () => {
           this.showPopup("Game Over!\nKnights collided.");
         });
-      }, 150);
+      }, 300);
       return;
     }
 
@@ -645,14 +677,16 @@ export class Game extends Scene {
           if (e && e.sprite) e.sprite.setVisible(false);
           this.playExplosion(this.bluePos.x, this.bluePos.y, onComplete);
         }
-      }, 150);
+      }, 300);
       return;
     }
 
     if (this.redPos.x === this.redFinalPos.x && this.redPos.y === this.redFinalPos.y &&
         this.bluePos.x === this.blueFinalPos.x && this.bluePos.y === this.blueFinalPos.y) {
       this.gameOver = true;
-      void this.showLeaderboardPopup();
+      setTimeout(() => {
+        void this.showLeaderboardPopup();
+      }, 300);
     }
   }
 

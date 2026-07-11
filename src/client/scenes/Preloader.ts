@@ -30,7 +30,9 @@ export class Preloader extends Scene {
     
     // Knights assets
     this.load.spritesheet('redknight', 'knights/red_knight_Idle.png', { frameWidth: 192, frameHeight: 192 });
+    this.load.spritesheet('redknight_run', 'knights/red_kinght_Run.png', { frameWidth: 192, frameHeight: 192 });
     this.load.spritesheet('blueknight', 'knights/blue_knight_Idle.png', { frameWidth: 192, frameHeight: 192 });
+    this.load.spritesheet('blueknight_run', 'knights/blue_knight_Run.png', { frameWidth: 192, frameHeight: 192 });
     this.load.image('tile', 'knights/tilesingle.png');
     
     // Destinations
