@@ -677,7 +677,9 @@ export class Game extends Scene {
     }).setOrigin(0.5);
 
     const scoreText = this.add.text(0, -160, `You finished in ${this.stepCount} steps!`, {
+      fontFamily: 'Patrick Hand',
       fontSize: '20px',
+      fontStyle: 'bold',
       color: '#ffffff',
       align: 'center',
       wordWrap: { width: 436, useAdvancedWrap: true }
@@ -723,7 +725,9 @@ export class Game extends Scene {
       }
 
       const lbText = this.add.text(0, -30, lbString, {
+        fontFamily: 'Patrick Hand',
         fontSize: '20px',
+        fontStyle: 'bold',
         color: '#693d5b',
         align: 'left',
         wordWrap: { width: 436, useAdvancedWrap: true }
@@ -738,6 +742,7 @@ export class Game extends Scene {
       const statsText = this.add.text(0, 110, `Global Stats: ${attempts} Plays | ${solves} Solves`, {
         fontFamily: 'Patrick Hand',
         fontSize: '20px',
+        fontStyle: 'bold',
         color: '#ffffff',
         align: 'center',
         wordWrap: { width: 436, useAdvancedWrap: true }
@@ -756,6 +761,7 @@ export class Game extends Scene {
     const okText = this.add.text(0, -4, 'Retry', {
       fontFamily: 'Patrick Hand',
       fontSize: '20px',
+      fontStyle: 'bold',
       color: '#ffffff'
     }).setOrigin(0.5);
 
@@ -781,6 +787,7 @@ export class Game extends Scene {
     const closeMenuText = this.add.text(0, -4, 'Close', {
       fontFamily: 'Patrick Hand',
       fontSize: '20px',
+      fontStyle: 'bold',
       color: '#ffffff'
     }).setOrigin(0.5);
 
