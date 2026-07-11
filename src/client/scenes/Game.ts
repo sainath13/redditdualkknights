@@ -71,7 +71,7 @@ export class Game extends Scene {
     this.controlsContainer = this.add.container(0, 0);
     this.hudContainer = this.add.container(0, 0);
 
-    const loadingText = this.add.text(this.scale.width / 2, this.scale.height / 2, 'Loading Map...', {
+    const loadingText = this.add.text(this.scale.width / 2, this.scale.height / 2, 'Loading Game...', {
       fontSize: '24px',
       color: '#ffffff',
     }).setOrigin(0.5);
@@ -478,7 +478,7 @@ export class Game extends Scene {
     this.uiContainer.setScale(scaleFactor);
     
     // Position Controls (D-pad) at bottom-left
-    this.controlsContainer.setPosition(85 * scaleFactor, height - 100 * scaleFactor);
+    this.controlsContainer.setPosition(120 * scaleFactor, height - 100 * scaleFactor);
     this.controlsContainer.setScale(scaleFactor);
     
     // Position HUD (Replay, Steps, Menu) at bottom-right
@@ -670,7 +670,7 @@ export class Game extends Scene {
 
     const title = this.add.text(0, -215, 'Level Complete!', {
       fontFamily: 'Patrick Hand',
-      fontSize: '32px',
+      fontSize: '34px',
       color: '#ffffff', // Changed to white since the background is red
       align: 'center',
       wordWrap: { width: 436, useAdvancedWrap: true }
@@ -678,7 +678,7 @@ export class Game extends Scene {
 
     const scoreText = this.add.text(0, -160, `You finished in ${this.stepCount} steps!`, {
       fontFamily: 'Patrick Hand',
-      fontSize: '20px',
+      fontSize: '22px',
       fontStyle: 'bold',
       color: '#ffffff',
       align: 'center',
@@ -686,7 +686,7 @@ export class Game extends Scene {
     }).setOrigin(0.5);
 
     const loadingText = this.add.text(0, -20, 'Submitting score...', {
-      fontSize: '20px', color: '#ffffff',
+      fontSize: '22px', color: '#ffffff',
       align: 'center',
       wordWrap: { width: 436, useAdvancedWrap: true }
     }).setOrigin(0.5);
@@ -726,7 +726,7 @@ export class Game extends Scene {
 
       const lbText = this.add.text(0, -30, lbString, {
         fontFamily: 'Patrick Hand',
-        fontSize: '20px',
+        fontSize: '22px',
         fontStyle: 'bold',
         color: '#693d5b',
         align: 'left',
@@ -741,7 +741,7 @@ export class Game extends Scene {
       const solves = lbData.solves || 0;
       const statsText = this.add.text(0, 110, `Global Stats: ${attempts} Plays | ${solves} Solves`, {
         fontFamily: 'Patrick Hand',
-        fontSize: '20px',
+        fontSize: '22px',
         fontStyle: 'bold',
         color: '#ffffff',
         align: 'center',
@@ -760,7 +760,7 @@ export class Game extends Scene {
     
     const okText = this.add.text(0, -4, 'Retry', {
       fontFamily: 'Patrick Hand',
-      fontSize: '20px',
+      fontSize: '22px',
       fontStyle: 'bold',
       color: '#ffffff'
     }).setOrigin(0.5);
@@ -786,7 +786,7 @@ export class Game extends Scene {
     
     const closeMenuText = this.add.text(0, -4, 'Close', {
       fontFamily: 'Patrick Hand',
-      fontSize: '20px',
+      fontSize: '22px',
       fontStyle: 'bold',
       color: '#ffffff'
     }).setOrigin(0.5);
