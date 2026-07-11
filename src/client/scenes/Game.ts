@@ -1,5 +1,5 @@
 import { Scene } from 'phaser';
-import { InitResponse, LeaderboardEntry } from '../../shared/api';
+import { InitResponse } from '../../shared/api';
 import * as Phaser from 'phaser';
 
 export class Game extends Scene {
@@ -359,7 +359,7 @@ export class Game extends Scene {
   createControls() {
     const createBtn = (x: number, y: number, textureKey: string, dx: number, dy: number) => {
       const btn = this.add.image(x, y, textureKey).setOrigin(0.5).setInteractive({ useHandCursor: true });
-      btn.setDisplaySize(45, 45);
+      btn.setDisplaySize(55, 55);
 
       btn.on('pointerdown', () => {
         btn.setTexture(`${textureKey}_pressed`);
@@ -396,11 +396,11 @@ export class Game extends Scene {
     this.controlsContainer.add(this.selectBtnContainer);
 
     // Arrange buttons in a circle around the center (0,0)
-    // Distance from center = 45px
-    createBtn(-45, 0, 'arrow_left', -1, 0);
-    createBtn(45, 0, 'arrow_right', 1, 0);
-    createBtn(0, -55, 'arrow_up', 0, -1);
-    createBtn(0, 45, 'arrow_down', 0, 1);
+    // Distance from center = 55px (up is 65px)
+    createBtn(-55, 0, 'arrow_left', -1, 0);
+    createBtn(55, 0, 'arrow_right', 1, 0);
+    createBtn(0, -65, 'arrow_up', 0, -1);
+    createBtn(0, 55, 'arrow_down', 0, 1);
     
     // HUD Buttons on the right side of screen (hudContainer)
     // 2x2 Grid Layout
@@ -660,19 +660,20 @@ export class Game extends Scene {
     const popup = this.add.container(this.scale.width / 2, this.scale.height / 2);
     
     const bg = this.add.image(0, 0, 'popup_bg');
-    bg.setDisplaySize(500, 400);
+    bg.setDisplaySize(500, 520);
 
-    const banner = this.add.nineslice(0, -45, 'banner_slots', undefined, 470, 280, 64, 64, 64, 64, true, true).setOrigin(0.5);
-    
-    const title = this.add.text(0, -160, 'Level Complete!', {
+    const banner = this.add.nineslice(0, -30, 'banner_slots', undefined, 470, 380, 64, 64, 64, 64, true, true).setOrigin(0.5);
+    const titleRibbon = this.add.nineslice(0, -210, 'banner_ribbon', undefined, 320, 70, 64, 64, 16, 16, true, true).setOrigin(0.5);
+
+    const title = this.add.text(0, -215, 'Level Complete!', {
       fontFamily: 'Patrick Hand',
       fontSize: '32px',
-      color: '#ffcc00',
+      color: '#ffffff', // Changed to white since the background is red
       align: 'center',
       wordWrap: { width: 436, useAdvancedWrap: true }
     }).setOrigin(0.5);
 
-    const scoreText = this.add.text(0, -110, `You finished in ${this.stepCount} steps!`, {
+    const scoreText = this.add.text(0, -160, `You finished in ${this.stepCount} steps!`, {
       fontSize: '20px',
       color: '#ffffff',
       align: 'center',
@@ -680,12 +681,12 @@ export class Game extends Scene {
     }).setOrigin(0.5);
 
     const loadingText = this.add.text(0, -20, 'Submitting score...', {
-      fontSize: '20px', color: '#aaaaaa',
+      fontSize: '20px', color: '#ffffff',
       align: 'center',
       wordWrap: { width: 436, useAdvancedWrap: true }
     }).setOrigin(0.5);
 
-    popup.add([bg, banner, title, scoreText, loadingText]);
+    popup.add([bg, banner, titleRibbon, title, scoreText, loadingText]);
 
     let scaleFactor = Math.min(this.scale.width / 1024, this.scale.height / 768, 1.2);
     if (this.scale.width < 800) {
@@ -709,27 +710,28 @@ export class Game extends Scene {
       loadingText.destroy();
 
       let lbString = "--- Top Players ---\n";
-      if (lbData.scores && lbData.scores.length > 0) {
-        lbData.scores.forEach((entry: LeaderboardEntry, index: number) => {
-          lbString += `${index + 1}. ${entry.member} - ${entry.score} steps\n`;
-        });
-      } else {
-        lbString += "No scores yet!";
+      for (let i = 0; i < 7; i++) {
+        const entry = (lbData.scores && i < lbData.scores.length) ? lbData.scores[i] : null;
+        if (entry) {
+          lbString += `${i + 1}. ${entry.member} - ${entry.score} steps\n`;
+        } else {
+          lbString += `${i + 1}. ---\n`;
+        }
       }
 
-      const lbText = this.add.text(0, 0, lbString, {
+      const lbText = this.add.text(0, -30, lbString, {
         fontSize: '20px',
-        color: '#88ff88',
+        color: '#693d5b',
         align: 'left',
         wordWrap: { width: 436, useAdvancedWrap: true }
       }).setOrigin(0.5, 0.5);
 
       const attempts = lbData.attempts || 0;
       const solves = lbData.solves || 0;
-      const statsText = this.add.text(0, 70, `Global Stats: ${attempts} Plays | ${solves} Solves`, {
+      const statsText = this.add.text(0, 110, `Global Stats: ${attempts} Plays | ${solves} Solves`, {
         fontFamily: 'Patrick Hand',
         fontSize: '16px',
-        color: '#ffcc00',
+        color: '#ffffff',
         align: 'center',
         wordWrap: { width: 436, useAdvancedWrap: true }
       }).setOrigin(0.5, 0.5);
@@ -741,7 +743,7 @@ export class Game extends Scene {
       console.error(e);
     }
 
-    const okBtn = this.add.container(0, 150);
+    const okBtn = this.add.container(-80, 190);
     const okImg = this.add.nineslice(0, 0, 'menu_btn', undefined, 140, 50, 32, 32, 32, 32, true, true).setInteractive({ useHandCursor: true });
     
     const okText = this.add.text(0, -4, 'Retry', {
@@ -767,7 +769,35 @@ export class Game extends Scene {
     });
 
     okBtn.add([okImg, okText]);
-    popup.add(okBtn);
+
+    const closeMenuBtn = this.add.container(80, 190);
+    const closeMenuImg = this.add.nineslice(0, 0, 'menu_btn', undefined, 140, 50, 32, 32, 32, 32, true, true).setInteractive({ useHandCursor: true });
+    
+    const closeMenuText = this.add.text(0, -4, 'Close', {
+      fontFamily: 'Patrick Hand',
+      fontSize: '20px',
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 4
+    }).setOrigin(0.5);
+
+    closeMenuImg.on('pointerdown', () => {
+      closeMenuImg.setTexture('menu_btn_pressed');
+      closeMenuText.setY(0);
+    });
+    closeMenuImg.on('pointerup', () => {
+      closeMenuImg.setTexture('menu_btn');
+      closeMenuText.setY(-4);
+      this.scene.start('MainMenu');
+    });
+    closeMenuImg.on('pointerout', () => {
+      closeMenuImg.setTexture('menu_btn');
+      closeMenuText.setY(-4);
+    });
+
+    closeMenuBtn.add([closeMenuImg, closeMenuText]);
+
+    popup.add([okBtn, closeMenuBtn]);
   }
 
 
