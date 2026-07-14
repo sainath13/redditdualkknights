@@ -111,7 +111,7 @@ export class MainMenu extends Scene {
       img.on('pointerup', () => {
         img.setTexture('menu_btn');
         txt.setY(-4);
-        if (this.sys.game.device.os.desktop) {
+        if (window.innerWidth >= 768) {
           this.showBaseSelectionPopup();
         } else {
           this.showPopup("The Level Designer is\nonly available on Desktop.");
